@@ -130,6 +130,7 @@
 		40FB3D77164545BA00FBA02F /* InvoiceListVC.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40FB3D79164545BA00FBA02F /* InvoiceListVC.xib */; };
 		40FB3D7B1645467200FBA02F /* PaymentListVC.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40FB3D7D1645467200FBA02F /* PaymentListVC.xib */; };
 		40FB3D841645534F00FBA02F /* AppIcon57x57.png in Resources */ = {isa = PBXBuildFile; fileRef = 40FB3D831645534F00FBA02F /* AppIcon57x57.png */; };
+		40FBE5CE18A3C664000963DF /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 40FBE5CD18A3C664000963DF /* LICENSE.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -300,6 +301,7 @@
 		40FB3D7C1645467200FBA02F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/PaymentListVC.xib; sourceTree = "<group>"; };
 		40FB3D7E1645467400FBA02F /* pl */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = pl; path = pl.lproj/PaymentListVC.xib; sourceTree = "<group>"; };
 		40FB3D831645534F00FBA02F /* AppIcon57x57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIcon57x57.png; sourceTree = "<group>"; };
+		40FBE5CD18A3C664000963DF /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -400,6 +402,7 @@
 		402A24BC15FF61D000D42CE8 = {
 			isa = PBXGroup;
 			children = (
+				40FBE5CD18A3C664000963DF /* LICENSE.txt */,
 				40FB3D831645534F00FBA02F /* AppIcon57x57.png */,
 				4036A094163EC7DF002B31BE /* Default@2x.png */,
 				4036A092163EC7D8002B31BE /* Default.png */,
@@ -721,6 +724,7 @@
 				4036A08D163EAC65002B31BE /* history@2x.png in Resources */,
 				4036A090163EB0A7002B31BE /* detail.png in Resources */,
 				4036A091163EB0A7002B31BE /* detail@2x.png in Resources */,
+				40FBE5CE18A3C664000963DF /* LICENSE.txt in Resources */,
 				4036A093163EC7D8002B31BE /* Default.png in Resources */,
 				4036A095163EC7DF002B31BE /* Default@2x.png in Resources */,
 				4036A098163ECB60002B31BE /* info_logo.png in Resources */,
