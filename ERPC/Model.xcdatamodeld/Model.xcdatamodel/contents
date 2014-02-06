@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1810" systemVersion="11E53" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="Contractor" representedClassName="Contractor" syncable="YES">
+        <attribute name="city" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="country" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="email1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="email2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="email3" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="houseno" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="invoices_last_resp_date" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="nip" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="payments_last_resp_date" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="postcode" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="region" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="regon" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="street" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="tel1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="tel2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="tel3" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="updated" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="www1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="www2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="www3" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Favorite" representedClassName="Favorite" syncable="YES">
+        <attribute name="order" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="contractor" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="invoice" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Invoice" syncable="YES"/>
+    </entity>
+    <entity name="Invoice" representedClassName="Invoice" syncable="YES">
+        <attribute name="dateofissue" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="doc" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="paid" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="paymentform" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="remaining" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="termdate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="updated" optional="YES" attributeType="Date" syncable="YES"/>
+        <relationship name="customer" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+    </entity>
+    <entity name="Payment" representedClassName="Payment" syncable="YES">
+        <attribute name="dateofissue" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="dateofsale" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="paymentform" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="remaining" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="termdate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="contractor" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+    </entity>
+    <entity name="Recent" representedClassName="Recent" syncable="YES">
+        <attribute name="last_access" optional="YES" attributeType="Date" syncable="YES"/>
+        <relationship name="contractor" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="invoice" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Invoice" syncable="YES"/>
+    </entity>
+    <entity name="Server" representedClassName="Server" syncable="YES">
+        <attribute name="drv_mfr" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="drv_ver" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="erp_mfr" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="erp_name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="svr_vmajor" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="svr_vminor" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
+    </entity>
+    <entity name="User" representedClassName="User" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Contractor" positionX="214" positionY="138" width="128" height="375"/>
+        <element name="Favorite" positionX="-65" positionY="441" width="128" height="90"/>
+        <element name="Invoice" positionX="-405" positionY="189" width="128" height="225"/>
+        <element name="Payment" positionX="466" positionY="234" width="128" height="180"/>
+        <element name="Recent" positionX="-218" positionY="180" width="128" height="90"/>
+        <element name="Server" positionX="-11" positionY="63" width="128" height="135"/>
+        <element name="User" positionX="-207" positionY="63" width="128" height="75"/>
+    </elements>
+</model>

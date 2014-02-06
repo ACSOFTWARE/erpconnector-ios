@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>2839FF7C-7E28-4342-85C9-D33C1B8A5F79</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ERPC</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>231999FC-AE5C-47F6-A9F4-2FFEB153AB37</key>
+		<string>ACSOFTWARE</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>ERPC.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>231999FC-AE5C-47F6-A9F4-2FFEB153AB37</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ACSOFTWARE</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>231999FC-AE5C-47F6-A9F4-2FFEB153AB37</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>231999FC-AE5C-47F6-A9F4-2FFEB153AB37</string>
+			<key>IDESourceControlWCCName</key>
+			<string>erpconnector-ios</string>
+		</dict>
+	</array>
+</dict>
+</plist>

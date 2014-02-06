@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "-[ACInvoiceListVC onGetListDoneDone:]:InvoiceListVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "_frc">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACDatabase fetchContractorByShortcut:]:Database.m">
+         <PersistentStrings>
+            <PersistentString
+               value = " Shortcut">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACERPCCommon onDocumentPart:]:ERPCCommon.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "_InvoicePreviewVC">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACSearchVC numberOfSectionsInTableView:]:SearchVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "[[self.frc sections] count]">
+            </PersistentString>
+            <PersistentString
+               value = "self.frc">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACSearchVC frc]:SearchVC.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ACRemoteAction requestWithAction:andParams:]:RemoteAction.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "Common.ServerAddress">
+            </PersistentString>
+            <PersistentString
+               value = "Common">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[NSString(ERPC) Base64encode]:ERPCCommon.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ACSearchVC searchEditingChanged:]:SearchVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.searchField.text.length">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACRemoteOperation onOperationDone]:BackgroundOperations.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "_RA.result">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACLoginVC onRemoteLoginResult:]:LoginVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "RA.result">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACLoginVC touchLoginBtn:]:LoginVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "Common.ServerAddress">
+            </PersistentString>
+            <PersistentString
+               value = "Common.UDID">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACRemoteOperation getInvoiceDocument]:BackgroundOperations.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "doc_result.doc.length">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACRemoteAction assignResult:withStatusData:]:RemoteAction.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ACERPCCommon InfoVC]:ERPCCommon.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "_HelloData.erp_name">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACContractorVC phoneTouch:]:ContractorVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "cstr[a]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACInvoicePreviewVC onDocumentPart:position:size:]:InvoicePreviewVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "pos/s">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACInvoiceListVC loadList:]:InvoiceListVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "customerShortcut">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
