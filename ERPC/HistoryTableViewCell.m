@@ -50,7 +50,9 @@
         if ( _r.contractor ) {
             [Common showContractorVC:_r.contractor];
         } else if ( _r.invoice ) {
-            [Common showInvoicePreview:_r.invoice.shortcut];
+            [Common showComDoc:_r.invoice];
+        } else if ( _r.order ) {
+            [Common showComDoc:_r.order];
         }
     }
 }

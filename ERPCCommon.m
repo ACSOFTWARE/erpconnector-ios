@@ -19,17 +19,30 @@
  */
 
 #import "ERPCCommon.h"
+#import "SideMenuVC.h"
+#import "MFSideMenu.h"
 #import "RemoteAction.h"
+#import "BackgroundOperations.h"
 #import "LoginVC.h"
-#import "SearchVC.h"
+#import "ACContractorListVC.h"
 #import "FavoritesVC.h"
 #import "HistoryVC.h"
-#import "ContractorVC.h"
+#import "ACContractorVC.h"
 #import "InfoVC.h"
-#import "InvoiceListVC.h"
-#import "InvoicePreviewVC.h"
 #import "PaymentListVC.h"
 #import "Invoice.h"
+#import "ACArticleVC.h"
+#import "ACComDocListVC.h"
+#import "ACComDocVC.h"
+#import "ACComDocItemVC.h"
+#import "ACComDocPreviewVC.h"
+#import "ACArticleListVC.h"
+#import "ACDEWaitingQueue.h"
+#import "DataExport.h"
+#import "ACDataExportVC.h"
+#import "Contractor.h"
+#import "Order.h"
+#import "ACCLimitListVC.h"
 
 #include <CommonCrypto/CommonHMAC.h>
 #include <Foundation/Foundation.h>
@@ -42,26 +55,55 @@ NSString *kRegisterDeviceOperationNotification = @"n03";
 NSString *kCustomerSearchDoneNotification = @"n04";
 NSString *kCustomerDataNotification = @"n05";
 NSString *kGetInvoiceListDoneNotification = @"n06";
-NSString *kInvoiceDataNotification = @"n07";
-NSString *kGetOutstandingPaymentsListDoneNotification = @"n08";
-NSString *kRemoteResultUnsuccess = @"n9";
-NSString *kDocumentPartNotification = @"n10";
-NSString *kGetDocumentDoneNotification = @"n11";
-NSString *kVersionErrorNotification = @"n12";
+NSString *kGetInvoiceItemsDoneNotification = @"n7";
+NSString *kInvoiceDataNotification = @"n08";
+NSString *kGetOutstandingPaymentsListDoneNotification = @"n09";
+NSString *kRemoteResultUnsuccess = @"n10";
+NSString *kDocumentPartNotification = @"n11";
+NSString *kGetDocumentDoneNotification = @"n12";
+NSString *kVersionErrorNotification = @"n13";
+NSString *kOrderDataNotification = @"n14";
+NSString *kGetOrderListDoneNotification = @"n15";
+NSString *kGetOrderItemsDoneNotification = @"n16";
+NSString *kArticleSearchDoneNotification = @"n17";
+NSString *kArticleDataNotification = @"n18";
+NSString *kComDocAddDoneNotification = @"n19";
+NSString *kComDocAddErrorNotification = @"n20";
+NSString *kRemoteDataNotification = @"n21";
+NSString *kDictionaryNotification = @"n22";
+NSString *kPriceNotification = @"n23";
+NSString *kGetLimitsDoneNotification = @"n24";
 
 @implementation ACERPCCommon {
+    BOOL _Connected;
     NSString *_UDID;
+    ACSideMenuVC *_sideMenuVC;
     UINavigationController *_navigationController;
     ACLoginVC *_LoginVC;
-    ACSearchVC *_SearchVC;
+    ACContractorListVC *_ContractorListVC;
     ACFavoritesVC *_FavoritesVC;
     ACHistoryVC *_HistoryVC;
     ACContractorVC *_ContractorVC;
     ACInfoVC *_InfoVC;
-    ACInvoiceListVC *_InvoiceListVC;
-    ACInvoicePreviewVC *_InvoicePreviewVC;
+    ACComDocListVC *_InvoiceListVC;
+    ACComDocPreviewVC *_ComDocPreviewVC;
     ACPaymentListVC *_PaymentListVC;
     ACDatabase *_DB;
+    ACComDocVC *_ComDocVC;
+    ACComDocItemVC *_ComDocItemVC;
+    ACComDocListVC *_OrderListVC;
+    ACArticleVC *_ArticleVC;
+    ACArticleListVC *_ArticleListVC;
+    ACArticleListVC *_ArticleGlobalListVC;
+    ACDEWaitingQueue *_ACDEWaitingQueue;
+    ACDataExportVC *_DataExportVC;
+    ACCLimitListVC *_CLimitListVC;
+    NSTimer *_exportTimer;
+    UIImageView *_connectionStatus;
+    UIImage *_imgConnected;
+    UIImage *_imgDisconnected;
+    
+    Contractor *_new_order_customer;
 }
 
 @synthesize window = _window;
@@ -69,26 +111,45 @@ NSString *kVersionErrorNotification = @"n12";
 @synthesize Login = _Login;
 @synthesize Password = _Password;
 @synthesize ServerAddress = _ServerAddress;
-@synthesize ServerCap = _ServerCap;
 @synthesize OpQueue = _OpQueue;
+@synthesize OpExportQueue = _OpExportQueue;
 @synthesize HelloData = _HelloData;
 @synthesize LastLogin = _LastLogin;
+@synthesize keyboardVisible = _keyboardVisible;
+@synthesize keyboardSize = _keyboardSize;
 
 -(id) init {
     self = [super init];
     if ( self ) {
+        _keyboardVisible = NO;
         _window = nil;
+        _sideMenuVC = nil;
         _navigationController = nil;
         _navigationController = nil;
         _OpQueue = [[NSOperationQueue alloc] init];
+        _OpExportQueue = [[NSOperationQueue alloc] init];
         _InfoVC = nil;
-        _SearchVC = nil;
+        _ContractorListVC = nil;
         _HistoryVC = nil;
         _InvoiceListVC = nil;
-        _InvoicePreviewVC = nil;
+        _ComDocPreviewVC = nil;
         _DB = nil;
         _HelloData = nil;
         _LastLogin = nil;
+        _ComDocVC = nil;
+        _ComDocItemVC = nil;
+        _OrderListVC = nil;
+        _ArticleVC = nil;
+        _exportTimer = nil;
+        _connectionStatus = nil;
+        _CLimitListVC = nil;
+        _Connected = NO;
+        
+        
+        _connectionStatus = [[UIImageView alloc] init];
+        _imgConnected = [UIImage imageNamed:@"greenpoint.png"];
+        _imgDisconnected = [UIImage imageNamed:@"redpoint.png"];
+        
         
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         [center addObserver:self
@@ -96,7 +157,13 @@ NSString *kVersionErrorNotification = @"n12";
                        name:NSUserDefaultsDidChangeNotification
                      object:nil];
         
+        
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onKeyboardShow:) name:UIKeyboardDidShowNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onKeyboardHide:) name:UIKeyboardWillHideNotification object:nil];
+        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onConnectionError:) name:kConnectionErrorNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onRemoteData:) name:kRemoteDataNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onVersionError:) name:kVersionErrorNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onRegisterResult:) name:kRegisterDeviceOperationNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCustomerData:) name:kCustomerDataNotification object:nil];
@@ -104,13 +171,43 @@ NSString *kVersionErrorNotification = @"n12";
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onRemoteLoginResult:) name:kLoginOperationNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onRemoteResultUnsuccess:) name:kRemoteResultUnsuccess object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGetInvoiceListDone:) name:kGetInvoiceListDoneNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGetInvoiceItemsDone:) name:kGetInvoiceItemsDoneNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onInvoiceData:) name:kInvoiceDataNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGetPaymentListDone:) name:kGetOutstandingPaymentsListDoneNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onDocumentPart:) name:kDocumentPartNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGetDocumentDone:) name:kGetDocumentDoneNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGetOrderListDone:) name:kGetOrderListDoneNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onOrderData:) name:kOrderDataNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGetOrderItemsDone:) name:kGetOrderItemsDoneNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onArticleData:) name:kArticleDataNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onArticleSearchDone:) name:kArticleSearchDoneNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onComDocAddDone:) name:kComDocAddDoneNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onComDocAddError:) name:kComDocAddErrorNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onPriceData:) name:kPriceNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onLimitData:) name:kGetLimitsDoneNotification object:nil];
         
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(managedObjectContextDidSaveNotification:) name:NSManagedObjectContextDidSaveNotification object:nil];
+
     }
     return self;
+}
+
+- (void)managedObjectContextDidSaveNotification:(NSNotification *)n {
+    
+    if ( _DB
+        && _DB.managedObjectContext
+        && _DB.managedObjectContext != n.object ) {
+        [_DB.managedObjectContext performSelectorOnMainThread:@selector(mergeChangesFromContextDidSaveNotification:) withObject:n waitUntilDone:NO];
+    };
+
+    /*
+    NSManagedObjectContext *moc = self.mainManagedObjectContext;
+    if (note.object != moc)
+        [moc performBlock:^(){
+            [moc mergeChangesFromContextDidSaveNotification:note];
+        }];
+*/
 }
 
 -(void)setUDID:(NSString *)UDID {
@@ -132,10 +229,23 @@ NSString *kVersionErrorNotification = @"n12";
 -(UINavigationController *)navigationController {
 
     if ( _navigationController == nil ) {
-        _navigationController = [[UINavigationController alloc] initWithRootViewController:self.SearchVC];
         
-        [_navigationController.navigationBar setBackgroundImage:[UIImage  imageNamed : @"nav_bg1" ] forBarMetrics:UIBarMetricsDefault];
+        _navigationController = [[UINavigationController alloc] init];
 
+        [_navigationController.navigationBar setBackgroundImage:[UIImage  imageNamed : (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1 ? @"nav_bg1" : @"ios6_nav_bg1" ) ] forBarMetrics:UIBarMetricsDefault];
+        [_navigationController.navigationBar setTranslucent:NO];
+        
+        [_navigationController pushViewController:self.ContractorListVC animated:NO];
+        
+        CGRect frame;
+        frame.size.height = 8;
+        frame.size.width = 8;
+        frame.origin.y = 2;
+        frame.origin.x = _navigationController.navigationBar.frame.size.width - frame.size.width - 2;
+        _connectionStatus.frame = frame;
+        
+        [_navigationController.navigationBar addSubview:_connectionStatus];
+        
         [_navigationController setDelegate:self];
     };
     return _navigationController;
@@ -144,11 +254,11 @@ NSString *kVersionErrorNotification = @"n12";
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     
-    if (  _InvoicePreviewVC
-        && viewController != _InvoicePreviewVC ) {
-        _InvoicePreviewVC = nil;
-    } else if ( viewController == _SearchVC ) {
-        [_SearchVC onRemoteSearchDone:nil];
+    if (  _ComDocPreviewVC
+        && viewController != _ComDocPreviewVC ) {
+        _ComDocPreviewVC = nil;
+    } else if ( viewController == _ContractorListVC ) {
+        [_ContractorListVC onRemoteSearchDone:nil];
     };
 }
 
@@ -160,6 +270,19 @@ NSString *kVersionErrorNotification = @"n12";
     }
 }
 
+-(void)setConnected:(BOOL)Connected {
+    _Connected = Connected;
+    UIImage *i = Connected ? _imgConnected : _imgDisconnected;
+    
+    if ( _connectionStatus.image != i ) {
+        [_connectionStatus setImage:i];
+    }
+}
+
+-(BOOL)Connected {
+    return _Connected;
+}
+
 -(ACLoginVC*)LoginVC {
     if ( _LoginVC == nil ) {
          _LoginVC = [[ACLoginVC alloc] initWithNibName:@"LoginVC" bundle:nil];
@@ -167,11 +290,12 @@ NSString *kVersionErrorNotification = @"n12";
     return _LoginVC;
 }
 
--(ACSearchVC*)SearchVC {
-    if ( _SearchVC == nil ) {
-        _SearchVC = [[ACSearchVC alloc] initWithNibName:@"SearchVC" bundle:nil];
+-(ACContractorListVC*)ContractorListVC {
+    if ( _ContractorListVC == nil ) {
+        _ContractorListVC = [[ACContractorListVC alloc] init];
     }
-    return _SearchVC;
+    
+    return  _ContractorListVC;
 }
 
 -(ACFavoritesVC*)FavoritesVC {
@@ -190,7 +314,7 @@ NSString *kVersionErrorNotification = @"n12";
 
 -(ACContractorVC*)ContractorVC {
     if ( _ContractorVC == nil ) {
-        _ContractorVC = [[ACContractorVC alloc] initWithNibName:@"ContractorVC" bundle:nil];
+        _ContractorVC = [[ACContractorVC alloc] init];
     }
     
     return _ContractorVC;
@@ -204,20 +328,20 @@ NSString *kVersionErrorNotification = @"n12";
     return _InfoVC;
 }
 
--(ACInvoiceListVC*)InvoiceListVC {
+-(ACComDocListVC*)InvoiceListVC {
     if ( _InvoiceListVC == nil ) {
-        _InvoiceListVC = [[ACInvoiceListVC alloc] initWithNibName:@"InvoiceListVC" bundle:nil];
+        _InvoiceListVC = [[ACComDocListVC alloc] initAsOrderList:NO];
     }
     
     return _InvoiceListVC;
 }
 
--(ACInvoicePreviewVC*)InvoicePreviewVC {
-    if ( _InvoicePreviewVC == nil ) {
-        _InvoicePreviewVC = [[ACInvoicePreviewVC alloc] initWithNibName:@"InvoicePreviewVC" bundle:nil];
+-(ACComDocPreviewVC*)ComDocPreviewVC {
+    if ( _ComDocPreviewVC == nil ) {
+        _ComDocPreviewVC = [[ACComDocPreviewVC alloc] initWithNibName:@"ACComDocPreviewVC" bundle:nil];
     }
     
-    return _InvoicePreviewVC;
+    return _ComDocPreviewVC;
 }
 
 -(ACPaymentListVC*)PaymentListVC {
@@ -227,6 +351,80 @@ NSString *kVersionErrorNotification = @"n12";
     
     return _PaymentListVC;
 }
+
+-(ACDEWaitingQueue*)DataExportWaitingQueue {
+    if ( _ACDEWaitingQueue == nil ) {
+        _ACDEWaitingQueue = [[ACDEWaitingQueue alloc] init];
+    }
+    
+    return _ACDEWaitingQueue;
+}
+
+-(ACComDocListVC*)OrderListVC {
+    if ( _OrderListVC == nil ) {
+        _OrderListVC = [[ACComDocListVC alloc] initAsOrderList:YES];
+    }
+    
+    return _OrderListVC;
+}
+
+-(ACComDocVC*)ComDocVC {
+    if ( _ComDocVC == nil ) {
+        _ComDocVC = [[ACComDocVC alloc] init];
+    }
+    
+    return _ComDocVC;
+}
+
+-(ACComDocItemVC*)ComDocItemVC {
+    if ( _ComDocItemVC == nil ) {
+        _ComDocItemVC = [[ACComDocItemVC alloc] init];
+    }
+    
+    return _ComDocItemVC;
+}
+
+
+-(ACArticleListVC*)ArticleListVC {
+    if ( _ArticleListVC == nil ) {
+        _ArticleListVC = [[ACArticleListVC alloc] init];
+    }
+    
+    return _ArticleListVC;
+}
+
+-(ACArticleListVC*)ArticleGlobalListVC {
+    if ( _ArticleGlobalListVC == nil ) {
+        _ArticleGlobalListVC = [[ACArticleListVC alloc] init];
+    }
+    
+    return _ArticleGlobalListVC;
+}
+
+-(ACArticleVC*)ArticleVC {
+    if ( _ArticleVC == nil ) {
+        _ArticleVC = [[ACArticleVC alloc] init];
+    }
+    
+    return _ArticleVC;
+}
+
+-(ACDataExportVC*)DataExportVC {
+    if ( _DataExportVC == nil ) {
+        _DataExportVC = [[ACDataExportVC alloc] init];
+    }
+    
+    return _DataExportVC;
+}
+
+-(ACCLimitListVC*)CLimitListVC {
+    if ( _CLimitListVC == nil ) {
+        _CLimitListVC = [[ACCLimitListVC alloc] init];
+    }
+    
+    return _CLimitListVC;
+}
+
 
 -(ACDatabase*)DB {
     assert([NSThread isMainThread]);
@@ -238,10 +436,67 @@ NSString *kVersionErrorNotification = @"n12";
     return _DB;
 }
 
+-(void)BeforeLogin {
+    [Common.OpQueue cancelAllOperations];
+    Common.HelloData = nil;
+}
+
+-(void)onLogin:(ACRemoteActionResultLogin*)login_result {
+    
+    if ( ![self loginVC_Active] ) return;
+    
+    Common.LastLogin = [NSDate date];
+    [Common.DB onLogin:login_result];
+    
+    [UIView transitionFromView:Common.window.rootViewController.view
+                        toView:Common.navigationController.view
+                      duration:0.65f
+                       options: UIViewAnimationOptionTransitionFlipFromTop /*UIViewAnimationOptionTransitionCrossDissolve*/
+     
+     
+                    completion:^(BOOL finished){
+                        self.LoginVC.edPassword.text = @"";
+                        
+                        Common.window.rootViewController = Common.navigationController;
+                        [Common.window makeKeyAndVisible];
+                        
+                        if ( _sideMenuVC == nil ) {
+                            _sideMenuVC = [[ACSideMenuVC alloc] init];
+                            _sideMenuVC.tableView.backgroundColor = [UIColor clearColor];
+                            _sideMenuVC.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+                        };
+                        
+                        MenuOptions options = MenuButtonEnabled|BackButtonEnabled;
+                        
+                        [MFSideMenuManager configureWithNavigationController:Common.navigationController
+                                                          sideMenuController:_sideMenuVC
+                                                                    menuSide:MenuLeftHandSide
+                                                                     options:options];
+                        
+                        [_sideMenuVC.tableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0] animated:NO scrollPosition:UITableViewScrollPositionTop];
+                        
+                    }];
+    
+    
+    _exportTimer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(onExportTimer:) userInfo:nil repeats:YES];
+    
+}
+
+-(void)onExportTimer:(id)sender {
+    [ACRemoteOperation doExport];
+}
+
 -(void)Logout {
 
     _LastLogin = nil;
     [_OpQueue cancelAllOperations];
+    [_OpExportQueue cancelAllOperations];
+    
+    if ( _exportTimer ) {
+        [_exportTimer invalidate];
+        _exportTimer = nil;
+    }
+
     
     self.LoginVC.edPassword.text = @"";
     [self.LoginVC moveToZeroPos:nil];
@@ -263,35 +518,103 @@ NSString *kVersionErrorNotification = @"n12";
     return self.window.rootViewController == _LoginVC;
 }
 
++(NSString*)statusStringWithDataExport:(DataExport*)de {
+    if ( de ) {
+        
+        switch([de.status intValue]) {
+            case QSTATUS_EDITING:
+                return NSLocalizedString(@"W przygotowaniu", nil);
+            case QSTATUS_WAITING:
+            case QSTATUS_SENT:
+            case QSTATUS_USERCONFIRMATION_WAITING:
+            case QSTATUS_ASYNCREQUEST_CONFIRMED:
+                return NSLocalizedString(@"Oczekiwanie", nil);
+                break;
+            case QSTATUS_WARNING:
+                return NSLocalizedString(@"Wymaga akceptacji", nil);
+                break;
+            case QSTATUS_ERROR:
+                return NSLocalizedString(@"Niepowodzenie", nil);
+                break;
+            case QSTATUS_DELETED:
+                return NSLocalizedString(@"Usunięto", nil);
+                break;
+        }
+    }
+    
+    return nil;
+}
+
++(NSString*)statusStringWithDataExport:(DataExport*)de andStatusString:(NSString*)status {
+        if ( de && status && status.length > 0) {
+            switch([de.status intValue]) {
+                case QSTATUS_EDITING:
+                case QSTATUS_WAITING:
+                case QSTATUS_SENT:
+                case QSTATUS_USERCONFIRMATION_WAITING:
+                case QSTATUS_ASYNCREQUEST_CONFIRMED:
+                    return [NSString stringWithFormat:@"%@ (%@)", [ACERPCCommon statusStringWithDataExport:de], status];
+            }
+            
+            
+        }
+    
+    return [ACERPCCommon statusStringWithDataExport:de];
+}
+
++(NSString*)dateExportTitle:(DataExport*)de {
+    if ( de ) {
+        if ( de.order ) {
+            if ( de.order.customer ) {
+                return [NSString stringWithFormat:@"Zamówienie dla %@", de.order.customer.name];
+            }
+        }
+    }
+    
+    return @"";
+}
+
+-(BOOL)exportInProgress:(DataExport *)de {
+    return  [de.status isEqualToNumber:[NSNumber numberWithInt:QSTATUS_WAITING]]
+             || [de.status isEqualToNumber:[NSNumber numberWithInt:QSTATUS_USERCONFIRMATION_WAITING]]
+             || [de.status isEqualToNumber:[NSNumber numberWithInt:QSTATUS_SENT]]
+             || [de.status isEqualToNumber:[NSNumber numberWithInt:QSTATUS_ASYNCREQUEST_CONFIRMED]];
+}
+
+
 - (NSURL *)applicationDocumentsDirectory
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 }
 
-- (void)onConnectionError:(NSNotification *)notif {
-    if ( self.window.rootViewController == _LoginVC ) {
-        
-        [_LoginVC onConnectionError:notif];
-        
-    } else if ( _SearchVC
-        && self.navigationController.visibleViewController == _SearchVC ) {
-        
-        [_SearchVC onRemoteSearchDone:notif];
-        
-    } else if ( _ContractorVC
-               && self.navigationController.visibleViewController == _ContractorVC ) {
-        
-        [_ContractorVC onConnectionError:notif];
-         
-    } else if ( _InvoiceListVC
-               && self.navigationController.visibleViewController == _InvoiceListVC ) {
-        
-        [_InvoiceListVC onConnectionError:notif];
-    } else if ( _InvoicePreviewVC
-               && self.navigationController.visibleViewController == _InvoicePreviewVC
-               && ![_InvoicePreviewVC documentVisible] ) {
-        [_InvoicePreviewVC documentErrorWithMessage:NSLocalizedString(@"Brak połączenia z serwerem", nil)];
+- (void)onKeyboardShow:(NSNotification *)notif {
+    _keyboardVisible = YES;
+    _keyboardSize = [[[notif userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+    
+    if ( [self.navigationController.visibleViewController isKindOfClass:[ACUIDataVC class]] ) {
+        [((ACUIDataVC*)self.navigationController.visibleViewController) onKeyboardShow:notif];
     }
+};
+
+- (void)onKeyboardHide:(NSNotification *)notif {
+    _keyboardVisible = NO;
+    
+    if ( [self.navigationController.visibleViewController isKindOfClass:[ACUIDataVC class]] ) {
+        [((ACUIDataVC*)self.navigationController.visibleViewController) onKeyboardHide:notif];
+    }
+};
+
+
+- (void)onConnectionError:(NSNotification *)notif {
+    
+    if ( self.window.rootViewController == _LoginVC ) {
+        [_LoginVC onConnectionError:notif];
+    };
+    self.Connected = NO;
+};
+
+- (void)onRemoteData:(NSNotification *)notif {
+    self.Connected = YES;
 };
 
 - (void)onVersionError:(NSNotification *)notif {
@@ -307,36 +630,39 @@ NSString *kVersionErrorNotification = @"n12";
     if ( RA ) {
         ACRemoteActionResultHello *hello = RA.hello_result;
         if ( hello
+            && hello.status.success == YES
             && [hello isKindOfClass:[ACRemoteActionResultHello class]] ) {
             _HelloData = hello;
+            [[NSUserDefaults standardUserDefaults] setValue:[NSString stringWithString:self.HelloData.srv_instanceid] forKey:@"serverinstanceid_preference"];
+            [self.DB updateServerData];
         }
     }
 };
 
 - (void)onRemoteSearchDone:(NSNotification *)notif {
-    if ( _SearchVC
-        && self.navigationController.visibleViewController == _SearchVC ) {
+    if ( _ContractorListVC
+        && self.navigationController.visibleViewController == _ContractorListVC ) {
         
-        [_SearchVC onRemoteSearchDone:notif];
+        [_ContractorListVC onRemoteSearchDone:notif];
         
     } else if ( _ContractorVC
                && self.navigationController.visibleViewController == _ContractorVC ) {
         
-        [_ContractorVC onRemoteSearchDone:notif];
+        [_ContractorVC onRecordDetailData:notif];
         
     }
 }
 
 - (void)onCustomerData:(NSNotification *)notif {
-    if ( _SearchVC
-        && self.navigationController.visibleViewController == _SearchVC ) {
+    if ( _ContractorListVC
+        && self.navigationController.visibleViewController == _ContractorListVC ) {
         
-        [_SearchVC onCustomerData:notif];
+        [_ContractorListVC onRecordDetailData:notif];
         
     } else if ( _ContractorVC
                && self.navigationController.visibleViewController == _ContractorVC ) {
         
-        [_ContractorVC onCustomerData:notif];
+        [_ContractorVC onRecordData:notif];
         
     }
 }
@@ -344,14 +670,51 @@ NSString *kVersionErrorNotification = @"n12";
 - (void)onGetInvoiceListDone:(NSNotification *)notif {
     if ( _InvoiceListVC
         && self.navigationController.visibleViewController == _InvoiceListVC ) {
-        [_InvoiceListVC onGetListDoneDone:notif];
+        [_InvoiceListVC onDetailDataLoadDone:notif];
+    }
+};
+
+- (void)onGetInvoiceItemsDone:(NSNotification *)notif {
+    if ( _ComDocVC
+        && self.navigationController.visibleViewController == _ComDocVC) {
+        [_ComDocVC onRecordDetailData:notif];
     }
 };
 
 - (void)onInvoiceData:(NSNotification *)notif {
     if ( _InvoiceListVC
         && self.navigationController.visibleViewController == _InvoiceListVC ) {
-        [_InvoiceListVC onInvoiceData:notif];
+        [_InvoiceListVC onDetailDataItem:notif];
+    }
+}
+
+- (void)onGetOrderListDone:(NSNotification *)notif {
+    
+    if ( _OrderListVC
+        && self.navigationController.visibleViewController == _OrderListVC ) {
+        [_OrderListVC onDetailDataLoadDone:notif];
+    }
+};
+
+- (void)onGetOrderItemsDone:(NSNotification *)notif {
+    if ( _ComDocVC
+        && self.navigationController.visibleViewController == _ComDocVC
+        && [_ComDocVC isOrder]) {
+        [_ComDocVC onRecordDetailData:notif];
+    }
+};
+
+- (void)onOrderData:(NSNotification *)notif {
+    
+    if ( _OrderListVC
+        && self.navigationController.visibleViewController == _OrderListVC ) {
+        [_OrderListVC onDetailDataItem:notif];
+    }
+    
+    if ( _ComDocVC
+        && self.navigationController.visibleViewController == _ComDocVC
+        && [_ComDocVC isOrder] ) {
+        [_ComDocVC onRecordData:notif];
     }
 }
 
@@ -369,50 +732,64 @@ NSString *kVersionErrorNotification = @"n12";
     }
 };
 
+- (void)onArticleSearchDone:(NSNotification *)notif {
+    if ( _ArticleListVC
+        && self.navigationController.visibleViewController == _ArticleListVC ) {
+        
+        [_ArticleListVC onRemoteSearchDone:notif];
+    } else if ( _ArticleGlobalListVC
+            && self.navigationController.visibleViewController == _ArticleGlobalListVC ) {
+            
+            [_ArticleGlobalListVC onRemoteSearchDone:notif];
+    } else if ( _ArticleVC
+               && self.navigationController.visibleViewController == _ArticleVC ) {
+        [_ArticleVC onRecordDetailData:notif];
+    }
+}
+
+- (void)onArticleData:(NSNotification *)notif {
+    
+    if ( _ArticleVC
+        && self.navigationController.visibleViewController == _ArticleVC ) {
+        [_ArticleVC onRecordData:notif];
+        
+    } else if ( _ArticleListVC
+        && self.navigationController.visibleViewController == _ArticleListVC ) {
+        [_ArticleListVC onDetailDataItem:notif];
+        
+    } else if ( _ArticleGlobalListVC
+               && self.navigationController.visibleViewController == _ArticleGlobalListVC ) {
+        [_ArticleGlobalListVC onDetailDataItem:notif];
+    };
+}
+
 
 - (void)onRemoteResultUnsuccess:(NSNotification *)notif {
     //int _Action = [[notif.userInfo valueForKey:@"action"] integerValue];
     ACRemoteActionResult *_result = [notif.userInfo valueForKey:@"result"];
     notif = nil;
     
-    NSString *AlertMessage = nil;
+    NSString *AlertMessage = [ACRemoteAction messageByResultCode:_result.status.code];
+    
     
     switch(_result.status.code) {
-        case RESULTCODE_INTERNAL_SERVER_ERROR:
-            AlertMessage = NSLocalizedString(@"Wystąpił wewnętrzny błąd serwera. Skontaktuj się z administratorem!", nil);
-            break;
-        case RESULTCODE_PARAM_ERROR:
-            AlertMessage = NSLocalizedString(@"Błąd kompatybilności. Skontaktuj się z administratorem!", nil);
-            break;
-        case RESULTCODE_SERVICEUNAVAILABLE:
-            if ( self.window.rootViewController == _LoginVC  ) {
-              AlertMessage = NSLocalizedString(@"Usługa niedostępna. Skontaktuj się z administratorem!", nil);
-            }
-            break;
+
         case RESULTCODE_ACCESSDENIED:
-             AlertMessage = NSLocalizedString(@"Brak dostępu! Skontaktuj się z administratorem.", nil);
+        case RESULTCODE_WAIT_FOR_REGISTER:
              if ( self.window.rootViewController != _LoginVC  ) {
+                 [Common.DB clearUserPassword];
                  [self Logout];
              };
             break;
             
         case RESULTCODE_LOGIN_INCORRECT:
-            if ( self.window.rootViewController == _LoginVC  ) {
-              AlertMessage = NSLocalizedString(@"Błędny login lub hasło", nil);
+        case RESULTCODE_SERVICEUNAVAILABLE:
+            if ( self.window.rootViewController != _LoginVC  ) {
+                AlertMessage = nil;
+                [Common.DB clearUserPassword];
+                [self Logout];
             }
             break;
-            
-        case RESULTCODE_INSUFF_ACCESS_RIGHTS:
-            AlertMessage = NSLocalizedString(@"Brak uprawnień", nil);
-            break;
-            
-        case RESULTCODE_WAIT_FOR_REGISTER:
-            AlertMessage = NSLocalizedString(@"Urządzenie oczekuje na rejestrację. Skontaktuj się z administratorem serwera.", nil);
-            if ( self.window.rootViewController != _LoginVC  ) {
-                [self Logout];
-            };
-            break;
-
     }
     
     if ( AlertMessage ) {
@@ -425,37 +802,89 @@ NSString *kVersionErrorNotification = @"n12";
 
 
 - (void)onDocumentPart:(NSNotification *)notif {
-    if ( _InvoicePreviewVC
-        && self.navigationController.visibleViewController == _InvoicePreviewVC ) {
-        [_InvoicePreviewVC onDocumentPart:[notif.userInfo stringValueForKey:@"Shortcut"] position:[notif.userInfo intValueForKey:@"Position"] size:[notif.userInfo intValueForKey:@"Size"] ];
-    }
 };
 
 - (void)onGetDocumentDone:(NSNotification *)notif {
-    if ( _InvoicePreviewVC
-        && self.navigationController.visibleViewController == _InvoicePreviewVC ) {
+    if ( _ComDocPreviewVC
+        && self.navigationController.visibleViewController == _ComDocPreviewVC ) {
         
         NSString *shortcut = [notif.userInfo stringValueForKey:@"Shortcut"];
         Invoice *i = [self.DB fetchInvoiceByShortcut:shortcut];
         if ( i ) {
             [self.DB.managedObjectContext refreshObject:i mergeChanges:YES];
-           [_InvoicePreviewVC onGetDocumentDone:shortcut];
+           [_ComDocPreviewVC onGetDocumentDone:shortcut];
         };
     }
 };
+
+- (void)onComDocAddDone:(NSNotification *)notif {
+    
+    if ( _ComDocVC
+        && self.navigationController.visibleViewController == _ComDocVC
+        && [_ComDocVC isOrder] ) {
+        
+        [_ComDocVC onRecordAddDone:notif];
+        
+    } else if ( _ACDEWaitingQueue
+            && self.navigationController.visibleViewController == _ACDEWaitingQueue ) {
+            
+        [_ACDEWaitingQueue loadList];
+    } else if ( _DataExportVC
+               && self.navigationController.visibleViewController == _DataExportVC ) {
+        [_DataExportVC onRecordAddDone:notif];
+        
+    }
+
+}
+
+- (void)onComDocAddError:(NSNotification *)notif {
+    
+    if ( _ACDEWaitingQueue
+               && self.navigationController.visibleViewController == _ACDEWaitingQueue ) {
+        
+        [_ACDEWaitingQueue loadList];
+    } else if ( _DataExportVC
+               && self.navigationController.visibleViewController == _DataExportVC ) {
+        [_DataExportVC onRecordAddError:notif];
+        
+    }
+    
+}
+
+- (void)onPriceData:(NSNotification *)notif {
+    
+    if ( _ComDocVC
+        && self.navigationController.visibleViewController == _ComDocVC ) {
+        
+        [_ComDocVC onPriceData:notif];
+        
+    };
+    
+}
+
+- (void)onLimitData:(NSNotification *)notif {
+    
+    if ( _ContractorListVC
+        && self.navigationController.visibleViewController == _ContractorListVC ) {
+        
+        [_ContractorListVC onDetailDataItem:notif];
+        
+    };
+    
+}
 
 - (void)showContractorVC:(Contractor*)c {
 
     if ( c ) {
         [self.navigationController pushViewController:self.ContractorVC animated:YES];
-        [self.ContractorVC showContractorData:c];
+        [self.ContractorVC showRecord:c];
     }
 }
 
 - (void)showContractorInvoiceListVC:(Contractor*)c {
     if ( c ) {
         [self.navigationController pushViewController:self.InvoiceListVC animated:YES];
-        [self.InvoiceListVC loadList:c];
+        [self.InvoiceListVC showRecord:c];
     }
 };
 
@@ -466,19 +895,87 @@ NSString *kVersionErrorNotification = @"n12";
     }
 };
 
-- (void)showInvoicePreview:(NSString*)shortcut {
-    if ( shortcut ) {
-        
-       // QLPreviewController *previewController = [[QLPreviewController alloc] init];
-       // previewController.dataSource = self;
-       // previewController.delegate = self;
-        
-       // [self.navigationController pushViewController:previewController animated:YES];
-        [self.navigationController pushViewController:self.InvoicePreviewVC animated:YES];
-        [self.InvoicePreviewVC showDocument:shortcut remoteEnabled:YES];
+- (void)showComDocPreview:(id)record {
+    if ( record ) {
+    
+        [self.navigationController pushViewController:self.ComDocPreviewVC animated:YES];
+        [self.ComDocPreviewVC showDocument:record remoteEnabled:YES];
     }
 }
 
+- (void)showContractorOrderListVC:(Contractor*)c {
+    [self.navigationController pushViewController:self.OrderListVC animated:YES];
+    [self.OrderListVC showRecord:c];
+}
+
+- (void)showComDoc:(id)record {
+    [self.navigationController pushViewController:self.ComDocVC animated:YES];
+    [self.ComDocVC showRecord:record];
+}
+
+- (void)showComDocItem:(id)record{
+    [self.navigationController pushViewController:self.ComDocItemVC animated:YES];
+    [self.ComDocItemVC showRecord:record];
+}
+
+- (void)selectArticlesForDocument:(id)record {
+    self.ArticleListVC.selectionMode = YES;
+    self.ArticleListVC.ComDoc = record;
+    [self.navigationController pushViewController:self.ArticleListVC animated:YES];
+}
+
+
+- (void)showArticle:(Article*)article {
+    [self.navigationController pushViewController:self.ArticleVC animated:YES];
+    [self.ArticleVC showRecord:article];
+}
+
+- (void)showArticleList {
+    [self.navigationController pushViewController:self.ArticleGlobalListVC animated:YES];
+}
+
+- (void)showDataExportItem:(DataExport*)de {
+    [self.navigationController pushViewController:self.DataExportVC animated:YES];
+    [self.DataExportVC showRecord:de];
+}
+
++(void)postNotification:(NSString*)n target:(id)target {
+    NSArray *keys = [NSArray arrayWithObjects:@"NN", nil];
+    NSArray *values = [NSArray arrayWithObjects:n, nil];
+    [target performSelectorOnMainThread:@selector(postNotification:) withObject:[NSDictionary dictionaryWithObjects:values forKeys:keys] waitUntilDone:NO];
+}
+
+- (void)showLimitsForContractor:(Contractor*)c {
+    [self.navigationController pushViewController:self.CLimitListVC animated:YES];
+    [self.CLimitListVC showRecord:c];
+}
+
+-(void)newOrderForCustomer:(Contractor *)c {
+    
+    _new_order_customer = c;
+    
+    if ( [self.DB eOrdersForContractor:c] ) {
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle: @"" message: [NSString stringWithFormat:@"%@ - %@", c.shortcut, NSLocalizedString(@"Ten kontrahent posiada już przynajmniej jedno przygotowywane zamówienie. Czy utworzyć kolejne ?", nil)] delegate: self cancelButtonTitle: NSLocalizedString(@"Nie", nil)  otherButtonTitles:NSLocalizedString(@"Tak", nil),nil];
+        [alertView show];
+        
+    } else {
+        [self alertView:nil clickedButtonAtIndex:1];
+    }
+    
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    
+    if ( buttonIndex == 1 ) {
+        
+        Order *order = [Common.DB newOrderForCustomer:_new_order_customer];
+        if ( order ) {
+            [Common showComDoc:order];
+        }
+        
+    }
+}
 
 @end
 
@@ -523,14 +1020,12 @@ static char rstr[] = {
     return [[NSString stringWithUTF8String:hexmac] uppercaseString];
 }
 
--(NSString*) Base64encode {
++(NSString*) Base64encodeWithCString:(const char*)bytes_to_encode length:(int)in_len {
     
     NSMutableString *ret = [[NSMutableString alloc] init];
+
     
-    const char *bytes_to_encode = [self cStringUsingEncoding:NSUTF8StringEncoding];
-    int in_len = bytes_to_encode == NULL ? 0 : strlen(bytes_to_encode);
-    
-    if ( in_len > 0 ) {
+    if ( bytes_to_encode && in_len > 0 ) {
         
         
         int i = 0;
@@ -572,6 +1067,19 @@ static char rstr[] = {
     
     
     return ret;
+
+}
+-(NSString*) Base64encode {
+
+    const char *bytes_to_encode = [self cStringUsingEncoding:NSUTF8StringEncoding];
+    int in_len = bytes_to_encode == NULL ? 0 : strlen(bytes_to_encode);
+    
+    return [NSString Base64encodeWithCString:bytes_to_encode length:in_len];
+
+};
+
++(NSString*) Base64encodeForUrlWithCString:(const char*)bytes_to_encode length:(int)in_len {
+    return  [[NSString Base64encodeWithCString:bytes_to_encode length:in_len] stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
 };
 
 -(NSString*) Base64encodeForUrl {
@@ -667,6 +1175,10 @@ static char rstr[] = {
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
+-(double)doubleValueWithLocalization {
+    return [[self stringByReplacingOccurrencesOfString:[[NSLocale currentLocale] objectForKey: NSLocaleDecimalSeparator] withString:@"."] doubleValue];
+}
+
 @end
 
 
@@ -699,7 +1211,30 @@ static char rstr[] = {
 
 -(BOOL) boolValueForKey:(NSString*)key {
     NSNumber *n = [self valueForKey:key];
-    return n && [n boolValue] == YES;
+    return n && [n isKindOfClass:[NSNumber class]] && [n boolValue] == YES;
+}
+
+@end
+
+@implementation NSNumber (ERPC)
+-(double)addVatByRate:(NSString*)rate {
+    
+    return ( [self doubleValue] * [rate intValue] / 100 ) + [self doubleValue];
+
+}
+
+-(NSString*)moneyToString {
+    
+    return [[NSString stringWithFormat:@"%.2f", [self doubleValue]] stringByReplacingOccurrencesOfString:@"." withString:[[NSLocale currentLocale] objectForKey: NSLocaleDecimalSeparator]];
+}
+@end
+
+@implementation UIButton (ERPC)
+
+-(void)setTitle:(NSString*)title {
+    [self setTitle:title forState:UIControlStateNormal];
+    [self setTitle:title forState:UIControlStateDisabled];
+    [self setTitle:title forState:UIControlStateSelected];
 }
 
 @end

@@ -3,10 +3,10 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "-[ACInvoiceListVC onGetListDoneDone:]:InvoiceListVC.m">
+         contextName = "-[ACInvoicePreviewVC onDocumentPart:position:size:]:InvoicePreviewVC.m">
          <PersistentStrings>
             <PersistentString
-               value = "_frc">
+               value = "pos/s">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -19,21 +19,10 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "-[ACERPCCommon onDocumentPart:]:ERPCCommon.m">
+         contextName = "-[ACInvoiceListVC loadList:]:InvoiceListVC.m">
          <PersistentStrings>
             <PersistentString
-               value = "_InvoicePreviewVC">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "-[ACSearchVC numberOfSectionsInTableView:]:SearchVC.m">
-         <PersistentStrings>
-            <PersistentString
-               value = "[[self.frc sections] count]">
-            </PersistentString>
-            <PersistentString
-               value = "self.frc">
+               value = "customerShortcut">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -48,6 +37,17 @@
             </PersistentString>
             <PersistentString
                value = "Common">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACSearchVC numberOfSectionsInTableView:]:SearchVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "[[self.frc sections] count]">
+            </PersistentString>
+            <PersistentString
+               value = "self.frc">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -67,6 +67,14 @@
          <PersistentStrings>
             <PersistentString
                value = "_RA.result">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ACOrderVC showOrderData:withRefresh:]:OrderVC.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "order.shortcut">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -117,18 +125,18 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "-[ACInvoicePreviewVC onDocumentPart:position:size:]:InvoicePreviewVC.m">
+         contextName = "-[ACInvoiceListVC onGetListDoneDone:]:InvoiceListVC.m">
          <PersistentStrings>
             <PersistentString
-               value = "pos/s">
+               value = "_frc">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "-[ACInvoiceListVC loadList:]:InvoiceListVC.m">
+         contextName = "-[ACERPCCommon onDocumentPart:]:ERPCCommon.m">
          <PersistentStrings>
             <PersistentString
-               value = "customerShortcut">
+               value = "_InvoicePreviewVC">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

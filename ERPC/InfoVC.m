@@ -38,9 +38,9 @@
     return self;
 }
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
     self.scroolView.contentSize = self.view2.frame.size;
     
     if ( Common.HelloData ) {
@@ -49,12 +49,10 @@
         self.lServerVer.text = [NSString stringWithFormat:@"%i.%i", Common.HelloData.ver_major, Common.HelloData.ver_minor];
         self.lDrvMfrName.text = Common.HelloData.drv_mfr;
         self.lDrvVer.text = Common.HelloData.drv_ver;
-        self.lAppVer.text = @"1.0";
+        self.lAppVer.text = @"1.9.4";
         self.lIdent.text = Common.UDID;
     }
-    
     self.lLoginName.text = [NSString stringWithString:Common.LoginVC.edLogin.text];
-    
 }
 
 - (void)didReceiveMemoryWarning

@@ -16,6 +16,7 @@ typedef enum {
 
 @interface UIViewController (MFSideMenu)
 
+
 @property (nonatomic, assign) MFSideMenuState menuState;
 
 // velocity is used in attempt to animate the menu at the speed at which the user swipes it open/closed
@@ -24,7 +25,11 @@ typedef enum {
 - (void)setMenuState:(MFSideMenuState)menuState animationDuration:(NSTimeInterval)duration;
 
 // view controllers can call this in order to setup the proper UIBarButtonItem
+- (void) backButtonPressed:(id)sender;
 - (void) setupSideMenuBarButtonItem;
 - (UIButton*) addFavButtonWithSelector:(SEL)s;
+-(UIButton*) addAddButtonWithSelector:(SEL)s;
+-(UIButton*) addDoneButtonWithSelector:(SEL)s;
+-(void)removeRightButton;
 
 @end

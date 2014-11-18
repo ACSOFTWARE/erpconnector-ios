@@ -156,10 +156,6 @@
     frame.origin = CGPointZero;
     switch (self.navigationController.interfaceOrientation) 
     {
-        case UIInterfaceOrientationPortrait:
-            frame.origin.x = xOffset;
-            break;
-            
         case UIInterfaceOrientationPortraitUpsideDown:
             frame.origin.x = -1*xOffset;
             break;
@@ -171,6 +167,10 @@
         case UIInterfaceOrientationLandscapeRight:
             frame.origin.y = xOffset;
             break;
+            
+        default:
+            frame.origin.x = xOffset;
+            break;
     }
     
     self.navigationController.view.frame = frame;
@@ -179,10 +179,6 @@
 - (CGFloat) yAdjustedForInterfaceOrientation:(CGPoint)point {
     switch (self.navigationController.interfaceOrientation)
     {
-        case UIInterfaceOrientationPortrait:
-            return point.y;
-            break;
-            
         case UIInterfaceOrientationPortraitUpsideDown:
             return -1*point.y;
             break;
@@ -193,6 +189,10 @@
             
         case UIInterfaceOrientationLandscapeRight:
             return point.x;
+            break;
+            
+        default:
+            return point.y;
             break;
     }
 }
@@ -200,10 +200,6 @@
 - (CGFloat) xAdjustedForInterfaceOrientation:(CGPoint)point {
     switch (self.navigationController.interfaceOrientation)
     {
-        case UIInterfaceOrientationPortrait:
-            return point.x;
-            break;
-            
         case UIInterfaceOrientationPortraitUpsideDown:
             return -1*point.x;
             break;
@@ -215,16 +211,16 @@
         case UIInterfaceOrientationLandscapeRight:
             return point.y;
             break;
+            
+        default:
+            return point.x;
+            break;
     }
 }
 
 - (void) setXAdjustedForInterfaceOrientation:(CGFloat)newX point:(CGPoint)point {
     switch (self.navigationController.interfaceOrientation)
     {
-        case UIInterfaceOrientationPortrait:
-            point.x = newX;
-            break;
-            
         case UIInterfaceOrientationPortraitUpsideDown:
             point.x = -1*newX;
             break;
@@ -235,6 +231,10 @@
             
         case UIInterfaceOrientationLandscapeRight:
             point.y = newX;
+            break;
+            
+        default:
+            point.x = newX;
             break;
     }
 }

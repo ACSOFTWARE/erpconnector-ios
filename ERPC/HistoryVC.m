@@ -22,6 +22,7 @@
 #import "ERPCCommon.h"
 #import "Contractor.h"
 #import "Invoice.h"
+#import "Order.h"
 #import "Recent.h"
 #import "HistoryTableViewCell.h"
 
@@ -108,13 +109,26 @@
     if ( r.contractor ) {
         cell.lType.text = NSLocalizedString(@"Kontrahent", nil);
         cell.lCaption.text = r.contractor.name;
-    } else if ( r.invoice ) {
-        cell.lType.text = NSLocalizedString(@"Faktura VAT", nil);
-        cell.lCaption.text = r.invoice.number;
+        cell.lCaption.textColor = [r.contractor.trnlocked boolValue] ? [UIColor redColor] : [UIColor blackColor];
     } else {
-        cell.lType.text = @"";
-        cell.lCaption.text = @"";
+        
+        cell.lCaption.textColor = [UIColor blackColor];
+        
+        if ( r.invoice ) {
+            cell.lType.text = NSLocalizedString(@"Faktura VAT", nil);
+            cell.lCaption.text = r.invoice.number;
+        } else if ( r.order ) {
+            
+            cell.lType.text = NSLocalizedString(@"Zamówienie", nil);
+            cell.lCaption.text = r.order.number;
+            
+        } else {
+            cell.lType.text = @"";
+            cell.lCaption.text = @"";
+        }
     }
+        
+
 
     cell.r = r;
     return cell;

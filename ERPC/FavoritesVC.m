@@ -23,6 +23,7 @@
 #import "Favorite.h"
 #import "Contractor.h"
 #import "Invoice.h"
+#import "Order.h"
 #import "FavTableViewCell.h"
 
 @interface ACFavoritesVC ()
@@ -110,12 +111,16 @@
     if ( f.contractor ) {
         cell.lType.text = NSLocalizedString(@"Kontrahent", nil);
         cell.lCaption.text = f.contractor.name;
-    } else if ( f.invoice ) {
-        cell.lType.text = NSLocalizedString(@"Faktura VAT", nil);;
-        cell.lCaption.text = f.invoice.number;
+        cell.lCaption.textColor = [f.contractor.trnlocked boolValue] ? [UIColor redColor] : [UIColor blackColor];
     } else {
-        cell.lType.text = @"";
-        cell.lCaption.text = @"";
+        cell.lCaption.textColor = [UIColor blackColor];
+        if ( f.invoice ) {
+            cell.lType.text = NSLocalizedString(@"Faktura VAT", nil);;
+            cell.lCaption.text = f.invoice.number;
+        } else {
+            cell.lType.text = @"Zamówienie";
+            cell.lCaption.text = f.order.number;
+        }
     }
     
     cell.f = f;

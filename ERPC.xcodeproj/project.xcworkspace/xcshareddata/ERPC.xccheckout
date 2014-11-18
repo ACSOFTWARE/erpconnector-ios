@@ -5,34 +5,34 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>C9533A0E-72D3-4D68-A142-E8501067733D</string>
+	<string>352A194F-ED07-4D81-BC34-F6A48E67FF37</string>
 	<key>IDESourceControlProjectName</key>
 	<string>ERPC</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>EB2280B7-DD1D-4689-975E-30FD119EB43D</key>
+		<key>CAD6EF0194D130D617F14AD213F0E491F7C7386F</key>
 		<string>https://github.com/ACSOFTWARE/erpconnector-ios.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>ERPC.xcodeproj/project.xcworkspace</string>
+	<string>ERPC.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>EB2280B7-DD1D-4689-975E-30FD119EB43D</key>
+		<key>CAD6EF0194D130D617F14AD213F0E491F7C7386F</key>
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/ACSOFTWARE/erpconnector-ios.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>EB2280B7-DD1D-4689-975E-30FD119EB43D</string>
+	<string>CAD6EF0194D130D617F14AD213F0E491F7C7386F</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>EB2280B7-DD1D-4689-975E-30FD119EB43D</string>
+			<string>CAD6EF0194D130D617F14AD213F0E491F7C7386F</string>
 			<key>IDESourceControlWCCName</key>
 			<string>erpconnector-ios</string>
 		</dict>

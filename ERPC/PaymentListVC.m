@@ -31,9 +31,10 @@
 @end
 
 @implementation ACPaymentListVC {
-    NSString *customerShortcut;
     NSFetchedResultsController *_frc;
     NSDate *_now;
+    Contractor *_ShowAfterViewLoaded;
+    Contractor *_Contractor;
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -41,7 +42,8 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
-        customerShortcut = nil;
+        _ShowAfterViewLoaded = nil;
+        _Contractor = nil;
         _frc = nil;
     }
     return self;
@@ -53,6 +55,16 @@
     [self.refreshInd setActivityIndicatorViewStyle:UIActivityIndicatorViewStyleGray];
     [self setupSideMenuBarButtonItem];
     // Do any additional setup after loading the view from its nib.
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    if ( _ShowAfterViewLoaded ) {
+        [self loadList:_ShowAfterViewLoaded];
+        _ShowAfterViewLoaded = nil;
+    }
 }
 
 - (void)viewDidUnload {
@@ -99,10 +111,9 @@
     self.lSumTotalBefore.text = @"0.00 zł";
     self.lSumTotalAfter.text = @"0.00 zł";
     
-    if ( customerShortcut ) {
-        Contractor *c = [Common.DB fetchContractorByShortcut:customerShortcut];
-        if ( c )  {
-            NSDictionary *sum = [Common.DB paymentSummaryForContractor:c];
+    if ( _Contractor ) {
+
+            NSDictionary *sum = [Common.DB paymentSummaryForContractor:_Contractor];
             
             self.lSumTotal.text = [NSString stringWithFormat:@"%.2f zł", [sum doubleValueForKey:@"total"]];
             
@@ -111,25 +122,24 @@
             double a = [sum doubleValueForKey:@"after"];
             self.lSumTotalAfter.textColor = a > 0 ? [UIColor colorWithHue:0.998 saturation:0.903 brightness:1.000 alpha:1.000] : [UIColor colorWithWhite:0.000 alpha:1.000];
             self.lSumTotalAfter.text = [NSString stringWithFormat:@"%.2f zł", a];
-            
-        }
+        
     }
    
 }
 
 - (void)loadList:(Contractor*)c {
     
+    if ( !self.isViewLoaded ) {
+        _ShowAfterViewLoaded = c;
+        return;
+    }
+    
     self.btnRefresh.hidden = NO;
     self.refreshInd.hidden = YES;
     
     if ( !c ) return;
     
-    if ( !customerShortcut
-        || ![customerShortcut isEqualToString:c.shortcut] ) {
-        customerShortcut = c.shortcut;
-        _frc = nil;
-    }
-
+    _Contractor = c;
     _frc = [Common.DB fetchedPaymentsForContractor:c];
     
     [self showSummary];
@@ -143,13 +153,13 @@
 }
 
 - (IBAction)refreshTouch:(id)sender {
-    if ( customerShortcut ) {
+    if ( _Contractor ) {
         
         self.btnRefresh.hidden = YES;
         self.refreshInd.hidden = NO;
         
         [Common.OpQueue cancelAllOperations];
-        [ACRemoteOperation outstandingPaymentsForCustomerWithShortcut:customerShortcut];
+        [ACRemoteOperation outstandingPaymentsForCustomerWithShortcut:_Contractor.shortcut];
     }
 }
 
@@ -214,12 +224,6 @@
 
     return cell;
     
-}
-
-
-- (void)onConnectionError:(NSNotification *)notif {
-    self.btnRefresh.hidden = NO;
-    self.refreshInd.hidden = YES;
 }
 
 - (void)onGetListDoneDone:(NSNotification *)notif {

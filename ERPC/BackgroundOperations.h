@@ -29,7 +29,17 @@
 +(void)customerSearch:(NSString*)text mtu:(int)MTU;
 +(void)customerSearchOnlyByShortcut:(NSString*)shortcut;
 +(void)invoicesForCustomerWithShortcut:(NSString*)shortcut mtu:(int)MTU fromDate:(NSDate*)date;
++(void)invoiceByShortcut:(NSString*)shortcut;
++(void)itemsForInvoiceByShortcut:(NSString*)ishortcut mtu:(int)MTU;
 +(void)outstandingPaymentsForCustomerWithShortcut:(NSString*)shortcut;
 +(void)getInvoiceDocumentWithShortcut:(NSString*)shortcut;
++(void)ordersForCustomerWithShortcut:(NSString*)shortcut mtu:(int)MTU fromDate:(NSDate*)date;
++(void)orderByShortcut:(NSString*)shortcut;
++(void)itemsForOrderByShortcut:(NSString*)oshortcut mtu:(int)MTU;
++(void)articleSearch:(NSString*)text mtu:(int)MTU;
++(void)dictinaryOfType:(int)type forContractor:(NSString*)contractor;
++(void)priceForContractor:(NSString*)contractor withArticleShortcut:(NSString*)article currency:(NSString*)currency;
++(void)limitForContractor:(NSString*)contractor;
++(void)doExport;
 
 @end

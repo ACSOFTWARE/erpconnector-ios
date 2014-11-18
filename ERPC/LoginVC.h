@@ -21,7 +21,7 @@
 #import <UIKit/UIKit.h>
 
 
-@interface ACLoginVC : UIViewController 
+@interface ACLoginVC : UIViewController <UITextFieldDelegate>
 - (IBAction)touchLoginBtn:(id)sender;
 
 - (void)onConnectionError:(NSNotification *)notif;

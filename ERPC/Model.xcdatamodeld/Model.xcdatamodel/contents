@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1810" systemVersion="11E53" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6252" systemVersion="13F34" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="Article" representedClassName="Article" syncable="YES">
+        <attribute name="desc" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="group" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="pkwiu" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="qty" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="unit" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="unitlistpricecurr" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="unitlistpricegross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unitlistpricenet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unitpurchasecurr" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="unitpurchaseprice" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unitretailcurr" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="unitretailprice" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unitspecialcurr" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="unitspecialprice" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unitwholesalecurr" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="unitwholesaleprice" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="uptodate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="vatpercent" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="vatrate" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
     <entity name="Contractor" representedClassName="Contractor" syncable="YES">
         <attribute name="city" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="country" optional="YES" attributeType="String" syncable="YES"/>
@@ -10,38 +35,143 @@
         <attribute name="invoices_last_resp_date" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="nip" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="orders_last_resp_date" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="payments_last_resp_date" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="postcode" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="region" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="regon" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="section" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="street" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="tel1" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="tel2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="tel3" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="updated" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="trnlocked" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="uptodate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="www1" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="www2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="www3" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="dataexport" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DataExport" inverseName="contractor" inverseEntity="DataExport" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="DataExport" representedClassName="DataExport" syncable="YES">
+        <attribute name="added" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="confirmrefid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="requestid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="status" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="uptodate" optional="YES" attributeType="Date" syncable="YES"/>
+        <relationship name="contractor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" inverseName="dataexport" inverseEntity="Contractor" syncable="YES"/>
+        <relationship name="invoice" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Invoice" inverseName="dataexport" inverseEntity="Invoice" syncable="YES"/>
+        <relationship name="order" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Order" inverseName="dataexport" inverseEntity="Order" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="DataExportMsg" representedClassName="DataExportMsg" syncable="YES">
+        <attribute name="error" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="message" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="dataexport" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DataExport" syncable="YES"/>
+    </entity>
+    <entity name="Dict" representedClassName="Dict" syncable="YES">
+        <attribute name="priority" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="uptodate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="value" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="contractor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
     </entity>
     <entity name="Favorite" representedClassName="Favorite" syncable="YES">
-        <attribute name="order" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
         <relationship name="contractor" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
         <relationship name="invoice" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Invoice" syncable="YES"/>
+        <relationship name="order" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Order" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="IndividualPrice" representedClassName="IndividualPrice" syncable="YES">
+        <attribute name="currency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="pricenet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="article" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Article" syncable="YES"/>
+        <relationship name="contractor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
     </entity>
     <entity name="Invoice" representedClassName="Invoice" syncable="YES">
         <attribute name="dateofissue" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="doc" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="number" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="paid" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
-        <attribute name="paymentform" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="paymentmethod" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="remaining" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="termdate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
-        <attribute name="updated" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="uptodate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
         <relationship name="customer" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="dataexport" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DataExport" inverseName="invoice" inverseEntity="DataExport" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="InvoiceItem" representedClassName="InvoiceItem" syncable="YES">
+        <attribute name="discount" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="discountpercent" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="price" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="pricenet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="qty" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unit" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="vatrate" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="vatvalue" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="invoice" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Invoice" syncable="YES"/>
+    </entity>
+    <entity name="Limit" representedClassName="Limit" syncable="YES">
+        <attribute name="currency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="limit" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="overdue" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="overdueallowed" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="remain" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unlimited" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="used" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="contractor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="Order" representedClassName="Order" syncable="YES">
+        <attribute name="currency" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="dateofcomplete" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="dateofissue" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="desc" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="number" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="paymentmethod" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="state" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="termofcontract" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="uptodate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="valuerealized" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <relationship name="customer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="dataexport" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DataExport" inverseName="order" inverseEntity="DataExport" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="OrderItem" representedClassName="OrderItem" syncable="YES">
+        <attribute name="discount" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="discountpercent" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="individualprice" optional="YES" attributeType="Boolean" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="price" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="pricenet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="qty" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unit" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="vatrate" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="vatvalue" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="order" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Order" syncable="YES"/>
     </entity>
     <entity name="Payment" representedClassName="Payment" syncable="YES">
         <attribute name="dateofissue" optional="YES" attributeType="Date" syncable="YES"/>
@@ -53,31 +183,60 @@
         <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <relationship name="contractor" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
     </entity>
     <entity name="Recent" representedClassName="Recent" syncable="YES">
         <attribute name="last_access" optional="YES" attributeType="Date" syncable="YES"/>
         <relationship name="contractor" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Contractor" syncable="YES"/>
         <relationship name="invoice" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="Invoice" syncable="YES"/>
+        <relationship name="order" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Order" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
     </entity>
     <entity name="Server" representedClassName="Server" syncable="YES">
+        <attribute name="cap" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="drv_mfr" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="drv_ver" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="erp_mfr" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="erp_name" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="svr_vmajor" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
-        <attribute name="svr_vminor" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="instanceid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="offline_validitytime" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="online_validitytime" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="svr_vmajor" optional="YES" attributeType="Integer 32" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="svr_vminor" optional="YES" attributeType="Integer 32" defaultValueString="0.0" syncable="YES"/>
     </entity>
     <entity name="User" representedClassName="User" syncable="YES">
+        <attribute name="lastaccess" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="login" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="warehouse" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="server" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Server" syncable="YES"/>
+    </entity>
+    <entity name="WareHouse" representedClassName="WareHouse" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="qty" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="uptodate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="whid" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="article" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Article" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Contractor" positionX="214" positionY="138" width="128" height="375"/>
-        <element name="Favorite" positionX="-65" positionY="441" width="128" height="90"/>
-        <element name="Invoice" positionX="-405" positionY="189" width="128" height="225"/>
-        <element name="Payment" positionX="466" positionY="234" width="128" height="180"/>
-        <element name="Recent" positionX="-218" positionY="180" width="128" height="90"/>
-        <element name="Server" positionX="-11" positionY="63" width="128" height="135"/>
-        <element name="User" positionX="-207" positionY="63" width="128" height="75"/>
+        <element name="Article" positionX="-398" positionY="549" width="128" height="390"/>
+        <element name="Contractor" positionX="214" positionY="138" width="128" height="465"/>
+        <element name="DataExport" positionX="475" positionY="902" width="128" height="210"/>
+        <element name="DataExportMsg" positionX="-101" positionY="1046" width="128" height="88"/>
+        <element name="Dict" positionX="-396" positionY="-54" width="128" height="150"/>
+        <element name="Favorite" positionX="-162" positionY="450" width="128" height="105"/>
+        <element name="IndividualPrice" positionX="-396" positionY="-54" width="128" height="120"/>
+        <element name="Invoice" positionX="-405" positionY="189" width="128" height="270"/>
+        <element name="InvoiceItem" positionX="-396" positionY="-54" width="128" height="238"/>
+        <element name="Limit" positionX="-396" positionY="-54" width="128" height="180"/>
+        <element name="Order" positionX="-45" positionY="677" width="128" height="300"/>
+        <element name="OrderItem" positionX="-236" positionY="612" width="128" height="253"/>
+        <element name="Payment" positionX="466" positionY="234" width="128" height="193"/>
+        <element name="Recent" positionX="-218" positionY="180" width="128" height="118"/>
+        <element name="Server" positionX="-299" positionY="-45" width="128" height="193"/>
+        <element name="User" positionX="-603" positionY="-207" width="128" height="133"/>
+        <element name="WareHouse" positionX="-405" positionY="954" width="128" height="135"/>
     </elements>
 </model>

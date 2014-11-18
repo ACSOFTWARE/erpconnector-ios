@@ -83,15 +83,38 @@ static char velocityKey;
     }
 }
 
--(UIButton*) addFavButtonWithSelector:(SEL)s {
+-(UIButton*) addRightBarButtonWithSelector:(SEL)s imageName:(NSString *)iname activeImageName:(NSString*)aimage {
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
     btn.frame = CGRectMake(0, 0, 45, 35);
-    [btn setImage:[UIImage  imageNamed : @"btn_fav.png" ] forState:UIControlStateNormal];
-    [btn setImage:[UIImage  imageNamed : @"btn_fav_active.png" ] forState:UIControlStateSelected];
+    [btn setImage:[UIImage  imageNamed : iname ] forState:UIControlStateNormal];
+    
+    if ( aimage ) {
+        [btn setImage:[UIImage  imageNamed : aimage ] forState:UIControlStateSelected];
+    }
+    
     [btn addTarget:self action:s forControlEvents:UIControlEventTouchDown];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:btn];
     return btn;
+}
+
+-(UIButton*) addFavButtonWithSelector:(SEL)s {
+    
+    return [self addRightBarButtonWithSelector:s imageName:@"btn_fav.png" activeImageName:@"btn_fav_active.png"];
+}
+
+-(UIButton*) addAddButtonWithSelector:(SEL)s {
+    
+    return [self addRightBarButtonWithSelector:s imageName:@"btn_add.png" activeImageName:nil];
+}
+
+-(void)removeRightButton {
+    self.navigationItem.rightBarButtonItem = nil;
+}
+
+-(UIButton*) addDoneButtonWithSelector:(SEL)s {
+    
+    return [self addRightBarButtonWithSelector:s imageName:@"btn_done.png" activeImageName:nil];
 }
 
 - (void)setMenuState:(MFSideMenuState)menuState {
@@ -193,10 +216,6 @@ static char velocityKey;
     if (!hidden) {
         switch (self.interfaceOrientation) 
         {
-            case UIInterfaceOrientationPortrait:
-                frame.origin.x = navigationControllerXPosition;
-                break;
-                
             case UIInterfaceOrientationPortraitUpsideDown:
                 frame.origin.x = -1*navigationControllerXPosition;
                 break;
@@ -207,6 +226,10 @@ static char velocityKey;
                 
             case UIInterfaceOrientationLandscapeRight:
                 frame.origin.y = navigationControllerXPosition;
+                break;
+                
+            default:
+                frame.origin.x = navigationControllerXPosition;
                 break;
         } 
     }

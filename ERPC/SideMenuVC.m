@@ -7,13 +7,15 @@
 #import "ERPCCommon.h"
 #import "SideMenuVC.h"
 #import "MFSideMenu.h"
+#import "ACArticleListVC.h"
 #import <QuartzCore/QuartzCore.h>
-
+#import "RemoteAction.h"
 
 @implementation ACMenuCell
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+        
 		self.clipsToBounds = YES;
 		
 		UIView *bgView = [[UIView alloc] init];
@@ -38,6 +40,7 @@
 		UIView *bottomLine = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 43.0f, [UIScreen mainScreen].bounds.size.height, 1.0f)];
 		bottomLine.backgroundColor = [UIColor colorWithRed:(40.0f/255.0f) green:(47.0f/255.0f) blue:(61.0f/255.0f) alpha:1.0f];
 		[self.textLabel.superview addSubview:bottomLine];
+         
 	}
 	return self;
 }
@@ -63,7 +66,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 5;
+    return 7;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -81,25 +84,38 @@
             cell.textLabel.text = @"";
             cell.imageView.image = [UIImage imageNamed:@"logout.png"];
             break;
+
         case 1:
-            cell.textLabel.text = NSLocalizedString(@"Znajdź kontrahenta", nil);
-            cell.imageView.image = [UIImage imageNamed:@"search.png"];
+            cell.textLabel.text = NSLocalizedString(@"Kontrahenci", nil);
+            cell.imageView.image = [UIImage imageNamed:@"customers.png"];
             break;
             
         case 2:
+            cell.textLabel.text = NSLocalizedString(@"Asortyment", nil);
+            cell.imageView.image = [UIImage imageNamed:@"box.png"];
+            break;
+            
+        case 3:
             cell.textLabel.text = NSLocalizedString(@"Ostatnie", nil);
             cell.imageView.image = [UIImage imageNamed:@"history.png"];
             break;
             
-        case 3:
+        case 4:
+            cell.textLabel.text = NSLocalizedString(@"Oczekujące", nil);
+            cell.imageView.image = [UIImage imageNamed:@"waiting.png"];
+            break;
+            
+        case 5:
             cell.textLabel.text = NSLocalizedString(@"Ulubione", nil);
             cell.imageView.image = [UIImage imageNamed:@"fav_menu.png"];
             break;
-            
-        case 4:
+
+        case 6:
             cell.textLabel.text = NSLocalizedString(@"Informacje", nil);
             cell.imageView.image = [UIImage imageNamed:@"info.png"];
             break;
+
+            
 
             
     }
@@ -107,6 +123,7 @@
     
     return cell;
 }
+
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
@@ -116,15 +133,32 @@
             [Common Logout];
             break;
         case 1:
-            Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.SearchVC];
+            Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.ContractorListVC];
             break;
         case 2:
-            Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.HistoryVC];
+
+            if ( Common.HelloData.cap & SERVERCAP_ARTICLE_SIMPLESEARCH) {
+                Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.ArticleGlobalListVC];
+            } else {
+            
+                UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+               [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+            
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle: @"" message: NSLocalizedString(@"Ten serwer nie pozwala na przeglądanie asortymentu. Skontaktuj się z Administratorem serwera.", nil) delegate: nil cancelButtonTitle: @"OK" otherButtonTitles:nil, nil];
+                [alertView show];
+               
+            }
             break;
         case 3:
-            Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.FavoritesVC];
+            Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.HistoryVC];
             break;
         case 4:
+            Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.DataExportWaitingQueue];
+            break;
+        case 5:
+            Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.FavoritesVC];
+            break;
+        case 6:
             Common.navigationController.viewControllers = [NSArray arrayWithObject:Common.InfoVC];
             break;
 

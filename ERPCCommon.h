@@ -25,58 +25,115 @@
 #define SERVERCAP_LOGIN                        0x0000000000000002
 #define SERVERCAP_FETCHRECORDSFROMRESULT       0x0000000000000004
 #define SERVERCAP_FETCHDOCUMENTFROMRESULT      0x0000000000000008
-#define SERVERCAP_CUSTOMERS_SIMPLESEARCH       0x0000000000000010
+#define SERVERCAP_CUSTOMER_SIMPLESEARCH        0x0000000000000010
 #define SERVERCAP_INVOICES                     0x0000000000000020
 #define SERVERCAP_INVOICE_ITEMS                0x0000000000000040
 #define SERVERCAP_INVOICE_DOC                  0x0000000000000080
 #define SERVERCAP_OUTSTANDINGPAYMENTS          0x0000000000000100
+#define SERVERCAP_ORDERS                       0x0000000000000200
+#define SERVERCAP_ORDER_ITEMS                  0x0000000000000400
+#define SERVERCAP_ARTICLE_SIMPLESEARCH         0x0000000000000800
+#define SERVERCAP_INDIVIDUALPRICES             0x0000000000001000
+#define SERVERCAP_DICTRIONARIES                0x0000000000002000
+#define SERVERCAP_LIMITKH                      0x0000000000004000
+#define SERVERCAP_NEWINVOICE                   0x0000000000008000
+#define SERVERCAP_NEWORDER                     0x0000000000010000
+#define SERVERCAP_ADDCONTRACTOR                0x0000000000020000
+
+#define QSTATUS_EDITING                        0
+#define QSTATUS_WAITING                        1
+#define QSTATUS_SENT                           2
+#define QSTATUS_ASYNCREQUEST_CONFIRMED         3
+#define QSTATUS_WARNING                        4
+#define QSTATUS_USERCONFIRMATION_WAITING       5
+#define QSTATUS_ERROR                          6
+#define QSTATUS_DONE                           7
+#define QSTATUS_DELETED                        8
 
 @class ACAppDelegate;
 @class ACLoginVC;
-@class ACSearchVC;
+@class ACContractorListVC;
 @class ACFavoritesVC;
 @class ACHistoryVC;
 @class ACContractorVC;
 @class ACInfoVC;
 @class ACInvoiceListVC;
-@class ACInvoicePreviewVC;
 @class ACPaymentListVC;
 @class ACRemoteActionResultHello;
+@class ACArticleVC;
+@class ACComDocVC;
+@class ACComDocItemVC;
+@class ACComDocPreviewVC;
+@class ACArticleListVC;
+@class ACDEWaitingQueue;
+@class ACDataExportVC;
+@class ACComDocListVC;
+@class ACCLimitListVC;
+@class ACRemoteActionResultLogin;
 
 @interface ACERPCCommon : NSObject <UINavigationControllerDelegate> {
 }
 
 -(void) Logout;
+-(void) BeforeLogin;
+-(void) onLogin:(ACRemoteActionResultLogin*)login_result;
+-(BOOL) loginVC_Active;
 - (void)defaultsChanged:(NSNotification *)notification;
 - (NSURL *)applicationDocumentsDirectory;
+
 
 - (void)showContractorVC:(Contractor*)c;
 - (void)showContractorInvoiceListVC:(Contractor*)c;
 - (void)showContractorPaymentListVC:(Contractor*)c;
-- (void)showInvoicePreview:(NSString*)shortcut;
+- (void)showContractorOrderListVC:(Contractor*)c;
+- (void)showComDoc:(id)record;
+- (void)showComDocItem:(id)record;
+- (void)showComDocPreview:(id)record;
+- (void)selectArticlesForDocument:(id)record;
+- (void)showArticle:(Article*)article;
+- (void)showArticleList;
+- (void)showDataExportItem:(DataExport*)de;
+- (void)showLimitsForContractor:(Contractor*)c;
+- (void)newOrderForCustomer:(Contractor*)c;
 -(void)CheckTimeout;
 -(BOOL)loginVC_Active;
+-(BOOL)exportInProgress:(DataExport*)de;
++(NSString*)statusStringWithDataExport:(DataExport*)de;
++(NSString*)statusStringWithDataExport:(DataExport*)de andStatusString:(NSString*)status;
++(NSString*)dateExportTitle:(DataExport*)de;
++(void)postNotification:(NSString*)n target:(id)target;
 
 @property (readwrite, atomic) NSString *UDID;
 @property (copy, readwrite, atomic) NSString *Login;
 @property (copy, readwrite, atomic) NSString *Password;
 @property (readonly, atomic) NSString *Sign;
 @property (copy, readwrite, atomic) NSString *ServerAddress;
-@property (readwrite, atomic) int64_t ServerCap;
 @property (readonly, atomic) NSOperationQueue *OpQueue;
+@property (readonly, atomic) NSOperationQueue *OpExportQueue;
 @property (copy, readwrite, atomic) ACRemoteActionResultHello *HelloData;
+@property (nonatomic) BOOL Connected;
 
+
+@property (readonly, nonatomic)BOOL keyboardVisible;
+@property (readonly, nonatomic)CGSize keyboardSize;
 @property (strong, nonatomic) UIWindow *window;
 @property (readonly, nonatomic) UINavigationController *navigationController;
 @property (readonly, nonatomic) ACLoginVC *LoginVC;
-@property (readonly, nonatomic) ACSearchVC *SearchVC;
+@property (readonly, nonatomic) ACContractorListVC *ContractorListVC;
 @property (readonly, nonatomic) ACFavoritesVC *FavoritesVC;
 @property (readonly, nonatomic) ACHistoryVC *HistoryVC;
 @property (readonly, nonatomic) ACContractorVC *ContractorVC;
 @property (readonly, nonatomic) ACInfoVC *InfoVC;
-@property (readonly, nonatomic) ACInvoiceListVC *InvoiceListVC;
-@property (readonly, nonatomic) ACInvoicePreviewVC *InvoicePreviewVC;
+@property (readonly, nonatomic) ACComDocListVC *InvoiceListVC;
+@property (readonly, nonatomic) ACComDocPreviewVC *ComDocPreviewVC;
 @property (readonly, nonatomic) ACPaymentListVC *PaymentListVC;
+@property (readonly, nonatomic) ACArticleVC *ArticleVC;
+@property (readonly, nonatomic) ACComDocVC *ComDocVC;
+@property (readonly, nonatomic) ACComDocItemVC *ComDocItemVC;
+@property (readonly, nonatomic) ACArticleListVC *ArticleGlobalListVC;
+@property (readonly, nonatomic) ACArticleListVC *ArticleListVC;
+@property (readonly, nonatomic) ACDEWaitingQueue *DataExportWaitingQueue;
+@property (readonly, nonatomic) ACDataExportVC *DataExportVC;
 @property (readonly, nonatomic) ACDatabase *DB;
 @property (readwrite, atomic) NSDate *LastLogin;
 @end
@@ -85,11 +142,19 @@
 @interface NSString (ERPC)
 - (NSString*) HMACWithSecret:(NSString*) secret;
 -(NSString*) Base64encode;
++(NSString*) Base64encodeWithCString:(const char*)bytes_to_encode length:(int)in_len;
++(NSString*) Base64encodeForUrlWithCString:(const char*)bytes_to_encode length:(int)in_len;
 -(unsigned char*) Base64decode:(int*)OutLen;
 -(NSData*) Base64decode;
 -(NSString*) Base64encodeForUrl;
 -(NSString*) firstChar;
 -(NSString*) trim;
+-(double)doubleValueWithLocalization;
+@end
+
+@interface NSNumber (ERPC)
+-(double)addVatByRate:(NSString*)rate;
+-(NSString*)moneyToString;
 @end
 
 @interface NSDictionary (ERPC)
@@ -102,16 +167,32 @@
 
 @end
 
+@interface UIButton (ERPC)
+-(void)setTitle:(NSString*)title;
+@end
+
 extern ACERPCCommon *Common;
 extern NSString *kConnectionErrorNotification;
+extern NSString *kRemoteDataNotification;
 extern NSString *kLoginOperationNotification;
 extern NSString *kRegisterDeviceOperationNotification;
 extern NSString *kCustomerSearchDoneNotification;
 extern NSString *kCustomerDataNotification;
 extern NSString *kGetInvoiceListDoneNotification;
+extern NSString *kGetInvoiceItemsDoneNotification;
 extern NSString *kInvoiceDataNotification;
 extern NSString *kGetOutstandingPaymentsListDoneNotification;
 extern NSString *kRemoteResultUnsuccess;
 extern NSString *kDocumentPartNotification;
 extern NSString *kGetDocumentDoneNotification;
 extern NSString *kVersionErrorNotification;
+extern NSString *kOrderDataNotification;
+extern NSString *kGetOrderListDoneNotification;
+extern NSString *kGetOrderItemsDoneNotification;
+extern NSString *kArticleSearchDoneNotification;
+extern NSString *kArticleDataNotification;
+extern NSString *kComDocAddDoneNotification;
+extern NSString *kComDocAddErrorNotification;
+extern NSString *kDictionaryNotification;
+extern NSString *kPriceNotification;
+extern NSString *kGetLimitsDoneNotification;

@@ -24,7 +24,6 @@
 @class ACPaymentTableViewCell;
 @interface ACPaymentListVC : UIViewController
 
-- (void)onConnectionError:(NSNotification *)notif;
 - (void)onGetListDoneDone:(NSNotification *)notif;
 - (void)loadList:(Contractor*)c;
 

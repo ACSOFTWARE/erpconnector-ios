@@ -19,29 +19,28 @@
  */
 
 #import "LoginVC.h"
-#import "SearchVC.h"
 #import "BackgroundOperations.h"
 #import "RemoteAction.h"
 #import "ERPCCommon.h"
 #import "AppDelegate.h"
-#import "SideMenuVC.h"
-#import "MFSideMenu.h"
+
 
 @interface ACLoginVC ()
 
 @end
 
 @implementation ACLoginVC {
-    ACSideMenuVC *sideMenuVC;
-    NSTimer *delayTimer;
+
+    NSTimer *delayTimer1;
+    NSTimer *delayTimer2;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     [self.activityIndicator setAccessibilityViewIsModal:UIActivityIndicatorViewStyleWhite];
-    sideMenuVC = nil;
-    delayTimer = nil;
+    delayTimer1 = nil;
+    delayTimer2 = nil;
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
@@ -77,36 +76,8 @@
         && RA.result.status
         && RA.result.status.success ) {
         
-        Common.LastLogin = [NSDate date];
-        
-        [UIView transitionFromView:Common.window.rootViewController.view
-                            toView:Common.navigationController.view
-                          duration:0.65f
-                           options: UIViewAnimationOptionTransitionFlipFromTop /*UIViewAnimationOptionTransitionCrossDissolve*/
-         
-         
-                        completion:^(BOOL finished){
-                            
-                            self.edPassword.text = @"";
-                            
-                            Common.window.rootViewController = Common.navigationController;
-                            [Common.window makeKeyAndVisible];
-                            
-                            if ( sideMenuVC == nil ) {
-                                sideMenuVC = [[ACSideMenuVC alloc] init];
-                                sideMenuVC.tableView.backgroundColor = [UIColor clearColor];
-                                sideMenuVC.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-                            };
-                            
-                            MenuOptions options = MenuButtonEnabled|BackButtonEnabled;
-                            
-                            [MFSideMenuManager configureWithNavigationController:Common.navigationController
-                                                              sideMenuController:sideMenuVC
-                                                                        menuSide:MenuLeftHandSide
-                                                                         options:options];
-                            
-                            [sideMenuVC.tableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0] animated:NO scrollPosition:UITableViewScrollPositionTop];
-                        }];
+        [Common onLogin:RA.login_result];
+
     }
         
 }
@@ -130,20 +101,35 @@
     [self moveToPosition:90];
 }
 
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    if ( textField == self.edLogin ) {
+        [self.edPassword becomeFirstResponder];
+    } else {
+        [self touchLoginBtn:nil];
+    }
+    return NO;
+}
+
 - (IBAction)startEditEvent:(id)sender {
-    if ( delayTimer ) {
-        [delayTimer invalidate];
-        delayTimer = nil;
+    if ( delayTimer1 ) {
+        [delayTimer1 invalidate];
+        delayTimer1 = nil;
     }
     [self moveToPosition:[UIScreen mainScreen].bounds.size.height > 480 ? 40 : 2];
 }
 
 - (IBAction)endEditEvent:(id)sender {
-    delayTimer = [NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(moveToZeroPos:) userInfo:nil repeats:NO];
+    delayTimer1 = [NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(moveToZeroPos:) userInfo:nil repeats:NO];
 }
 
 - (void)onConnectionError:(NSNotification *)notif {
 
+    [NSTimer scheduledTimerWithTimeInterval:delayTimer2 ? 3 : 0 target:self selector:@selector(delayedConnectionErrorMsg:) userInfo:nil repeats:NO];
+}
+
+- (void)delayedConnectionErrorMsg:(id)sender {
+    
     if ( Common.ServerAddress
         && ![Common.ServerAddress isEqualToString:@""] ) {
         
@@ -155,6 +141,8 @@
                                                        delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alert show];
     };
+    
+    
 }
 
 - (void)onVersionError:(NSNotification *)notif {
@@ -181,8 +169,12 @@
         [alert show];
 
     } else {
-    
-        [Common.OpQueue cancelAllOperations];
+        
+        Common.Connected = NO;
+        Common.Login = self.edLogin.text;
+        Common.Password = self.edPassword.text;
+        
+        [Common BeforeLogin];
         self.activityIndicator.hidden = NO;
     
         while(Common.OpQueue.operationCount > 0) {
@@ -190,12 +182,27 @@
         };
     
         if ( self.activityIndicator.hidden == NO ) {
-          [ACRemoteOperation login:self.edLogin.text withPassword:self.edPassword.text];
+          [ACRemoteOperation login:Common.Login withPassword:Common.Password];
+          delayTimer2 = [NSTimer scheduledTimerWithTimeInterval:2 target:self selector:@selector(localAuth:) userInfo:nil repeats:NO];
+        
         }
         
     };
-     
+    
 }
+-(void)localAuth:(id)sender {
+    
+    if ( self.activityIndicator.hidden == NO
+        && [Common loginVC_Active]
+        && [Common.DB localPasswordPass] ) {
+        self.activityIndicator.hidden = YES;
+        [Common onLogin:nil];
+    }
+    
+    delayTimer2 = nil;
+};
+
+
 /*
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     if ( alertView.tag == 1 ) {

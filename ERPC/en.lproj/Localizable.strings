@@ -5,6 +5,10 @@
   Created by Przemysław Zygmunt on 03.11.2012.
   Copyright (c) 2012 AC SOFTWARE SP. Z O.O. All rights reserved.
 */
+"Tak" = "Yes";
+"Nie" = "No";
+"Anuluj" = "Cancel";
+
 "Brak połączenia z serwerem" = "No connection to the server";
 "Wersja serwera nie jest kompatybilna z tym oprogramowaniem! Skontaktuj się z administratorem serwera." = "The server version is not compatible with this software! Contact your server administrator.";
 "Wprowadź adres serwera. (Ustawienia)" = "Enter the server address. (Settings)";
@@ -14,21 +18,120 @@
 "Ostatnie"="Recent";
 "Ulubione"="Favorites";
 "Informacje"="Information";
+"Oczekujące"="Waiting";
 
 "Wystąpił wewnętrzny błąd serwera. Skontaktuj się z administratorem!" = "Internal server error. Contact your server administrator!";
 "Błąd kompatybilności. Skontaktuj się z administratorem!" = "Compatibility error. Contact your server administrator!";
+"Błędny klucz autoryzacji. Skontaktuj się z administratorem!" = "Invalid authorization key. Please contact Administrator!";
 "Usługa niedostępna. Skontaktuj się z administratorem!" = "Service not available. Contact your server administrator!";
 "Brak dostępu! Skontaktuj się z administratorem." = "No access! Contact your server administrator!";
 "Błędny login lub hasło" = "Invalid username or password";
 "Brak uprawnień" = "No permission";
+"Próba wysłania wiadomości e-mail zakończona niepowodzeniem!" = "Attempt to send email has failed!";
 "Urządzenie oczekuje na rejestrację. Skontaktuj się z administratorem serwera." = "The device is expected to register.  Contact your server administrator!";
+"Błędny adres lub identyfikator!" = "Invalid address or identifier!";
+"Błędny klucz!" = "Invalid key!";
+"Tymczasowo niedostępne." = "Temporarily unavailable.";
+"Nie istnieje lub brak wystarczających uprawnień." = "Insufficient or no authorization.";
+"Nie istnieje." = "Does not exist.";
+"Niedozwolona operacja!" = "Illegal Operation!";
+"Błąd ogólny!" = "General error!";
+"Usługa niedostępna. Skontaktuj się z administratorem!" = "Service unavailable. Please contact Administrator!";
+"Brak dostępu! Skontaktuj się z administratorem." = "Access denied. Please contact Administrator.";
+"Błądna akcja." = "Invalid action.";
+"Żądana akcja nie istnieje." = "The requested action does not exist.";
+"Wymagane potwierdzenie." = "Confirmation required.";
+"Brak gotowości." = "Not ready.";
+"Błędne powtórzenie hasła!" = "Invalid password confirmation!";
 
-"Kontrahent" = "Customer";
+
+"Kontrahent" = "Contractor";
 "Faktura VAT" = "Invoice";
+"Zamówienie" = "Order";
 
+"Dane z dnia" = "Up to date";
 "Dane z dnia:" = "Up to date:";
 
 "Wyślij" = "E-mail";
 "Drukuj" = "Print";
 
 "dni" = "days";
+
+"Kontrahenci"="Contractors";
+"Asortyment"="Assortment";
+
+"Pozycja zamówienia" = "Order item";
+"Pozycja faktury" = "Invoice item";
+
+"Cena wyjściowa dla tego towaru nie została pobrana z serwera dla tego Klienta." = "Initial price of this product for this Customer has not been downloaded from server.";
+
+"Ten serwer nie pozwala na dodawanie zamówień. Skontaktuj się z Administratorem serwera." = "This server does not allow to add new Purchase Orders. Please contact server Administrator.";
+
+"Ten serwer nie pozwala na przeglądanie zamówień. Skontaktuj się z Administratorem serwera." = "This server does not allow to review Purchase Orders. Please contact server Administrator.";
+
+"Ten serwer nie pozwala na przeglądanie faktur. Skontaktuj się z Administratorem serwera." = "This server does not allow to review Invoices History. Please contact server Administrator.";
+
+"Ten serwer nie pozwala na przeglądanie płatności. Skontaktuj się z Administratorem serwera." = "This server does not allow to review Payments History. Please contact server Administrator.";
+
+"Wybrane towary zostaną pominięte. Czy chcesz kontynuować ?" = "Selected goods will be disregarded. Are you sure you want to continue?";
+
+"Czy na pewno chcesz usunąć ?" = "Are you sure you want to delete ?";
+
+"Dane o wskazanym identyfikatorze nie zostały odnalezione. Skontaktuj się z administratorem serwera." = "No item with the given ID could be found. Please contact server Administrator.";
+
+"Ten kontrahent posiada już przynajmniej jedno przygotowywane zamówienie. Czy utworzyć kolejne ?" = "This Customer has at least one Order arranged. Do you want to create a new one?";
+
+"Ten serwer nie pozwala na przeglądanie asortymentu. Skontaktuj się z Administratorem serwera." = "This server does not allow to review the stock. Please contact server Administrator.";
+
+
+"Nowe zamówienie" = "New order";
+"Zamówienie nr:" = "Order #";
+"Faktura VAT nr:" = "Invoice #:";
+"Czy na pewno chcesz wysłać zamówienie ?" = "Are you sure you want to send this Purchase Order ?";
+
+"Dane kontrahenta" = "Contractor details";
+"Utwórz zamówienie" = "New order";
+"Transakcje zablokowane" = "Transactions locked";
+"Nieograniczony" = "Unlimited";
+"Wyznacz trasę" = "Directions";
+"Pokaż na mapie" = "Show on map";
+"Prześlij do" = "Send to";
+"Określony" = "Specified";
+"Nieokreślony błąd" = "Unspecified error";
+
+
+"W przygotowaniu" = "In preparation";
+"Oczekiwanie" = "Waiting";
+"Wymaga akceptacji" = "requires approval";
+"Niepowodzenie" = "Failure";
+"Usunięto" = "Deleted";
+
+"dni" = "days";
+
+"nazwa" = "name";
+"grupa" = "group";
+"stawka vat" = "vat rate";
+"łączny stan" = "total qty";
+"cena detaliczna" = "retail price";
+"cena hurtowa" = "quantity price";
+"cena specjalna" = "special price";
+"opis" = "description";
+"wartość vat" = "vat value";
+"cena netto" = "price net";
+"cena brutto" = "price gross";
+"rabat" = "discount";
+"ilość" = "qty";
+"razem netto" = "total net";
+"razem brutto" = "total gross";
+
+"klient" = "customer";
+"forma płatności" = "payment method";
+"stan" = "state";
+
+"opis/uwagi" = "description";
+"dotyczy" = "concerns";
+"utworzono" = "created";
+"uaktualniono" = "updated";
+
+"adres" = "address";
+"telefom" = "phone";
