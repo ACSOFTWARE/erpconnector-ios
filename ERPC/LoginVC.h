@@ -21,8 +21,9 @@
 #import <UIKit/UIKit.h>
 
 
-@interface ACLoginVC : UIViewController <UITextFieldDelegate>
+@interface ACLoginVC : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
 - (IBAction)touchLoginBtn:(id)sender;
+- (IBAction)touchTIDAuthBtn:(id)sender;
 
 - (void)onConnectionError:(NSNotification *)notif;
 - (void)onVersionError:(NSNotification *)notif;
@@ -32,6 +33,7 @@
 - (IBAction)endEditEvent:(id)sender;
 - (void)moveToZeroPos:(id)sender;
 
+@property (weak, nonatomic) IBOutlet UIButton *btnTIDAuth;
 @property (weak, nonatomic) IBOutlet UITextField *edLogin;
 @property (weak, nonatomic) IBOutlet UITextField *edPassword;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;

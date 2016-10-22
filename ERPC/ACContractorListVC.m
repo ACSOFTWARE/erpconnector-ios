@@ -21,6 +21,7 @@
 #import "ERPCCommon.h"
 #import "BackgroundOperations.h"
 #import "MFSideMenu.h"
+#import "RemoteAction.h"
 
 @interface ACContractorListVC ()
 
@@ -84,9 +85,19 @@
 }
 
 - (void)addTouch:(id)sender {
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Ta funkcja nie jest obsługiwana przez serwer"
-                                                   delegate:Common.window.rootViewController cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-    [alert show];
+    
+    if ( Common.HelloData.cap & SERVERCAP_ADDCONTRACTOR ) {
+        
+        [Common newContractor];
+    
+        
+    } else {
+        
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle: @"" message: NSLocalizedString(@"Ten serwer nie pozwala na dodawanie kontrahentów. Skontaktuj się z Administratorem serwera.", nil) delegate: nil cancelButtonTitle: @"OK" otherButtonTitles:nil, nil];
+        [alertView show];
+    }
+    
+
 }
 
 

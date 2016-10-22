@@ -23,4 +23,5 @@
 @interface ACComDocItemVC : ACUIDataVC <ACUIFormDataSource, ACUIFormDelegate>
 +(void)calculateOrderItem:(OrderItem*)oi priceNet:(double)net discount:(double)discount qty:(double)qty vatRate:(double)vat;
 +(void)calculateOrderItem:(OrderItem*)oi;
+-(BOOL)setSalesHistoryButtonState;
 @end

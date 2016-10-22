@@ -35,7 +35,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [self setupSideMenuBarButtonItem];
+  //  [self setupSideMenuBarButtonItem];
     title_view = [[UIView alloc] initWithFrame:CGRectMake(62, -1, 195, 46)];
     self.dataSource = self;
     

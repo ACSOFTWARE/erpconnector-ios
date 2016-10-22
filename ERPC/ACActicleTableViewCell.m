@@ -41,7 +41,13 @@
     if ( article )  {
         
         self.lName.text = [article.name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        self.lShortcut.text = [article.shortcut stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        
+        if ( article.codeex && article.codeex.length > 0 && [article.codeex isEqualToString:article.shortcut] == NO ) {
+            self.lShortcut.text = [[NSString stringWithFormat:@"%@ %@",article.shortcut, article.codeex] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        } else {
+            self.lShortcut.text = [article.shortcut stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        }
+        
         
         
         NSString *unit = article.unit.length == 0 ? @"" : [NSString stringWithFormat:@"/%@", article.unit];

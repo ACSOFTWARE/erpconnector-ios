@@ -39,6 +39,7 @@
 #define ACREMOTEOPERATIONTYPE_GETDICTIONARY          12
 #define ACREMOTEOPERATIONTYPE_GETPRICE               13
 #define ACREMOTEOPERATIONTYPE_LIMITS                 14
+#define ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY   15
 
 #define DOC_MAX_DATA_PACKET 32768
 
@@ -67,6 +68,7 @@ NSMutableArray *priceCheckQueue;
     id _id1;
     ACDatabase *_DB;
     DataExport *_de;
+    BOOL _deleted;
 }
 
 +(void)registerDevice {
@@ -102,6 +104,15 @@ NSMutableArray *priceCheckQueue;
 
 +(void)articleSearch:(NSString*)text mtu:(int)MTU {
     [ACRemoteOperation search:text mtu:MTU onlyByShortcut:NO opType:ACREMOTEOPERATIONTYPE_ARTICLE_SEARCH];
+}
+
++(void)articleSalesHistory:(NSString*)shortcut mtu:(int)MTU {
+    
+    ACRemoteOperation *Op = [[ACRemoteOperation alloc] init];
+    [Op setOptype:ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY];
+    [Op setStr1:shortcut];
+    [Op setInt1:MTU];
+    [Common.OpQueue addOperation:Op];
 }
 
 +(void)commercialDocByShortcut:(NSString*)shortcut Optype:(int)optype CustomerShortcut:(NSString*)cshortcut mtu:(int)MTU fromDate:(NSDate*)date {
@@ -335,8 +346,13 @@ NSMutableArray *priceCheckQueue;
                 dict = [NSDictionary dictionaryWithObjects:values forKeys:keys];
                 
                 break;
+                
             case ACREMOTEOPERATIONTYPE_ARTICLE_SEARCH:
                 notifyName = kArticleSearchDoneNotification;
+                break;
+                
+            case ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY:
+                notifyName = kArticleSalesHistoryListDoneNotification;
                 break;
                 
             case ACREMOTEOPERATIONTYPE_GETDICTIONARY:
@@ -416,6 +432,10 @@ NSMutableArray *priceCheckQueue;
         case ACREMOTEOPERATIONTYPE_ARTICLE_SEARCH:
             nt = kArticleDataNotification;
             break;
+            
+        case ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY:
+            nt = kArticleSalesHistoryItemDataNotification;
+            break;
     }
     
     for(int a=0;a<data.items.count;a++) {
@@ -428,7 +448,15 @@ NSMutableArray *priceCheckQueue;
                 break;
                 
             case ACREMOTEOPERATIONTYPE_ORDER_LIST:
-                [self.DB updateOrder:[self.DB jsonToOrder:[data.items objectAtIndex:a]] customer:_id1];
+            {
+                NSString *cshortcut = nil;
+                Order *order = [self.DB jsonToOrder:[data.items objectAtIndex:a] customerShortcut:&cshortcut];
+                if ( _id1 == nil && cshortcut != nil ) {
+                    _id1 = [self.DB fetchContractorByShortcut:cshortcut];
+                }
+                [self.DB updateOrder:order customer:_id1];
+            }
+
                 break;
                 
             case ACREMOTEOPERATIONTYPE_ARTICLE_SEARCH:
@@ -438,6 +466,18 @@ NSMutableArray *priceCheckQueue;
                 NSString *WareHouseName;
                 Article *artice = [self.DB jsonToArticle:[data.items objectAtIndex:a] qty:&Qty warehouseid:&WareHouseId warehousename:&WareHouseName];
                 [self.DB updateArticle:artice qty:Qty warehouseid:WareHouseId warehousename:WareHouseName];
+                break;
+            }
+                
+            case ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY:
+            {
+                if ( _deleted == NO ) {
+                    [self.DB removeArticleSHItems:_id1];
+                    _deleted = YES;
+                }
+                
+                ArticleSHItem *item = [self.DB jsonToArticleSHItem:[data.items objectAtIndex:a]];
+                [self.DB addArticleSHItem:item article:_id1];
                 break;
             }
                 
@@ -463,6 +503,18 @@ NSMutableArray *priceCheckQueue;
         case ACREMOTEOPERATIONTYPE_ARTICLE_SEARCH:
             Result = [_RA articleSearch:_str1 maxCount:_int1];
             n = @"Articles";
+            break;
+            
+        case ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY:
+            
+            _id1 = [self.DB fetchArticleByShortcut:_str1];
+            _deleted = NO;
+            
+            if ( _id1 != nil ) {
+                Result = [_RA articleSalesHistory:_str1 maxCount:_int1];
+                n = @"ArticleSalesHistory";
+            }
+            
             break;
     }
     
@@ -497,7 +549,14 @@ NSMutableArray *priceCheckQueue;
             }
             
         }
+        
+        if ( _optype == ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY
+             && _deleted == NO ) {
+            
+            [self.DB removeArticleSHItems:_id1];
+        }
     };
+    
     
     [self onOperationDone];
 }
@@ -505,7 +564,7 @@ NSMutableArray *priceCheckQueue;
 
 - (void)commercialDocList {
     
-    _id1 = [self.DB fetchContractorByShortcut:_str1];
+    _id1 = _str1 == nil ? nil : [self.DB fetchContractorByShortcut:_str1];
     
     BOOL result = NO;
     NSString *name = nil;
@@ -718,7 +777,7 @@ NSMutableArray *priceCheckQueue;
             && doc_result.doc ) {
             
             [md appendData:doc_result.doc];
-            int Offset = doc_result.doc.length;
+            int Offset = (int)doc_result.doc.length;
             
             while(Offset < doc_result.totalSize) {
                 if ( [self isCancelled]
@@ -761,6 +820,8 @@ NSMutableArray *priceCheckQueue;
         BOOL result = NO;
         if ( _de.order !=  nil ) {
             result = status == QSTATUS_WAITING ? [_RA newOrder:[self.DB orderTojsonString:_de.order]] : [_RA confirmOrderByRefID:_de.confirmrefid];
+        } else if ( _de.contractor != nil ) {
+            result = status == QSTATUS_WAITING ? [_RA addContractor:[self.DB contractorTojsonString:_de.contractor autoShortcut:YES]] : [_RA confirmContractorByRefID:_de.confirmrefid];
         }
         
         if ( result ) {
@@ -771,7 +832,7 @@ NSMutableArray *priceCheckQueue;
         } else {
             [self.DB updateDataExport:_de withResult:_RA.async_result];
             
-            [ACERPCCommon postNotification:kComDocAddErrorNotification target:self];
+            [ACERPCCommon postNotification:kRemoteAddErrorNotification target:self];
         }
     };
     
@@ -789,7 +850,7 @@ NSMutableArray *priceCheckQueue;
                [self.DB updateDataExport:_de withResult:_RA.async_result];
             }
             
-            [ACERPCCommon postNotification:kComDocAddErrorNotification target:self];
+            [ACERPCCommon postNotification:kRemoteAddErrorNotification target:self];
         }
     }
     
@@ -821,7 +882,7 @@ NSMutableArray *priceCheckQueue;
             NSDictionary *dict = [NSDictionary dictionaryWithObjects:values forKeys:keys];
             
             keys = [NSArray arrayWithObjects:@"NN", @"UI", nil];
-            values = [NSArray arrayWithObjects:kComDocAddDoneNotification, dict, nil];
+            values = [NSArray arrayWithObjects:kRemoteAddDoneNotification, dict, nil];
             [self performSelectorOnMainThread:@selector(postNotification:) withObject:[NSDictionary dictionaryWithObjects:values forKeys:keys] waitUntilDone:NO];
         }
         
@@ -935,6 +996,10 @@ NSMutableArray *priceCheckQueue;
                 break;
                 
             case ACREMOTEOPERATIONTYPE_ARTICLE_SEARCH:
+                [self doSearch];
+                break;
+                
+            case ACREMOTEOPERATIONTYPE_ARTICLE_SALESHISTORY:
                 [self doSearch];
                 break;
                 

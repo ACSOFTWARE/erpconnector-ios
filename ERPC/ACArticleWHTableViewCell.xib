@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="5053" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1605" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none">
     <dependencies>
-        <deployment defaultVersion="1296" identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -18,7 +18,6 @@
                         <rect key="frame" x="0.0" y="14" width="332" height="1"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" white="0.81234529700000002" alpha="1" colorSpace="calibratedWhite"/>
-                        <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
                     </view>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="RETENGO PLUS 5L" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="6" id="QlA-FB-YIe">
                         <rect key="frame" x="6" y="0.0" width="129" height="12"/>
@@ -38,6 +37,7 @@
                 <outlet property="lName" destination="QlA-FB-YIe" id="ZAn-U5-otT"/>
                 <outlet property="lQty" destination="Acc-1v-e4z" id="F2B-zR-Yjk"/>
             </connections>
+            <point key="canvasLocation" x="180" y="257"/>
         </tableViewCell>
     </objects>
 </document>

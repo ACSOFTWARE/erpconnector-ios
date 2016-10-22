@@ -17,9 +17,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#import "ACUIPart.h"
+#import "ACUIExportBtn.h"
+#import "ERPCCommon.h"
+#import "RemoteAction.h"
 
-@interface ACUICDocButtons : ACUIPart
-@property (weak, nonatomic) IBOutlet UIButton *btnSend;
+@implementation ACUIExportBtn
+
+
+- (id)initWithNamedNib:(NSString *)nib form:(ACUIForm*)_form {
+    self = [super initWithNamedNib:nib form:_form];
+    if ( self ) {
+         [self.btnSend setTitle:[NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Prześlij do", nil), Common.HelloData.erp_name] forState:UIControlStateNormal];
+    }
+    
+    return self;
+}
 
 @end

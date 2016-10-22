@@ -32,9 +32,9 @@
 #import "OrderItem.h"
 #import "DataExport.h"
 #import "DataExportMsg.h"
-#import "Article.h"
+#import "Article+CoreDataProperties.h"
+#import "ArticleSHItem+CoreDataProperties.h"
 #import "BackgroundOperations.h"
-#import "JSONKit.h"
 #import "RemoteAction.h"
 #import "WareHouse.h"
 #import "Dict.h"
@@ -74,10 +74,34 @@
     _managedObjectModel = managedObjectModel;
 }
 
+-(void)removeDocumentFile:(NSString*)file {
+    
+    NSURL *fURL = [[Common applicationDocumentsDirectory] URLByAppendingPathComponent:file];
+    
+    NSError *err;
+    if ( [fURL checkResourceIsReachableAndReturnError:&err] == YES ) {
+        
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        [fileManager removeItemAtURL:fURL error:&err];
+    };
+    
+}
+
+-(void)removeDB:(NSString*)file {
+    
+    [self removeDocumentFile:file];
+    [self removeDocumentFile:[NSString stringWithFormat:@"%@-shm", file]];
+    [self removeDocumentFile:[NSString stringWithFormat:@"%@-wal", file]];
+};
+
 - (NSPersistentStoreCoordinator*)persistentStoreCoordinator {
     if ( _persistentStoreCoordinator == nil ) {
         
-        NSURL *storeURL = [[Common applicationDocumentsDirectory] URLByAppendingPathComponent:@"Model.sqlite"];
+        
+        [self removeDB:@"Model.sqlite"];
+
+        
+        NSURL *storeURL = [[Common applicationDocumentsDirectory] URLByAppendingPathComponent:@"Model_v4.sqlite"];
         NSError *error = nil;
         _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
         
@@ -206,7 +230,7 @@
 
 -(id) fetchItemByShortcut:(NSString *)Shortcut entityName:(NSString*)en {
     
-    return [self fetchItemByPredicate:[NSPredicate predicateWithFormat:@"shortcut = %@ AND user = %@", Shortcut, [self getCurrentUser]] entityName:en];
+    return [self fetchItemByPredicate:[NSPredicate predicateWithFormat:@"shortcut = %@ AND shortcut <> %@ AND shortcut <> nil AND user = %@", Shortcut, @"", [self getCurrentUser]] entityName:en];
 };
 
 -(id) fetchObject:(id)obj entityName:(NSString*)en {
@@ -266,11 +290,13 @@
    
     [self updateVisibilityStatusWithEntityName:@"Contractor" andPredicate:[NSPredicate predicateWithFormat:@"dataexport == nil"]];
     
+    
     txt = [NSString stringWithFormat:@"*%@*", txt];
     
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     
-    NSPredicate *p0 = [NSPredicate predicateWithFormat:@"user == %@ AND visible == YES", [self getCurrentUser]];
+    NSPredicate *p0 = [NSPredicate predicateWithFormat:@"user == %@ AND visible == YES AND (dataexport == nil OR dataexport.status <> %@)", [self getCurrentUser], [NSNumber numberWithInt:QSTATUS_DONE]];
+    
     
     NSPredicate *p1 = [NSPredicate predicateWithFormat:@"shortcut like[c] %@", txt];
     NSPredicate *p2 = [NSPredicate predicateWithFormat:@"name like[c] %@", txt];
@@ -344,12 +370,87 @@
     c.www1 = [dict stringValueForKey:@"WWW1"];
     c.www2 = [dict stringValueForKey:@"WWW2"];
     c.www3 = [dict stringValueForKey:@"WWW3"];
+    c.limit = [dict numberValueForKey:@"Limit"];
     c.trnlocked = [NSNumber numberWithBool:([dict boolValueForKey:@"TrnLocked"] || [[dict stringValueForKey:@"TrnLocked"] isEqualToString:@"1"] || [[dict stringValueForKey:@"TrnLocked"] isEqualToString:@"Yes"])];
     c.invoices_last_resp_date = nil;
     c.payments_last_resp_date = nil;
     c.orders_last_resp_date = nil;
     
     return c;
+}
+
+-(NSString*) notNullString:(NSString*)str {
+    return str == nil ? @"" : str;
+}
+
+-(NSString*) contractorTojsonString:(Contractor*)contractor autoShortcut:(BOOL)as {
+    if ( contractor == nil ) return nil;
+    
+    NSArray *keys = nil;
+    NSArray *values = nil;
+    
+
+    keys = [NSArray arrayWithObjects:@"Shortcut",
+            @"Name",
+            @"NIP",
+            @"REGON",
+            @"Country",
+            @"Region",
+            @"PostCode",
+            @"City",
+            @"Street",
+            @"HouseNumber",
+            @"Phone1",
+            @"Phone2",
+            @"Phone3",
+            @"WWW1",
+            @"WWW2",
+            @"WWW3",
+            @"Email1",
+            @"Email2",
+            @"Email3",
+            nil];
+    
+    NSString *Shortcut = contractor.shortcut;
+    if ( as == YES ) {
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"yyMMddHHmmss"];
+        
+        Shortcut = [formatter stringFromDate:[NSDate date]];
+    }
+    
+    values = [NSArray arrayWithObjects:
+              [self notNullString:Shortcut],
+              [self notNullString:contractor.name],
+              [self notNullString:contractor.nip],
+              [self notNullString:contractor.regon],
+              [self notNullString:contractor.country],
+              [self notNullString:contractor.region],
+              [self notNullString:contractor.postcode],
+              [self notNullString:contractor.city],
+              [self notNullString:contractor.street],
+              [self notNullString:contractor.houseno],
+              [self notNullString:contractor.tel1],
+              [self notNullString:contractor.tel2],
+              [self notNullString:contractor.tel3],
+              [self notNullString:contractor.www1],
+              [self notNullString:contractor.www2],
+              [self notNullString:contractor.www3],
+              [self notNullString:contractor.email1],
+              [self notNullString:contractor.email2],
+              [self notNullString:contractor.email3],
+              nil];
+    
+    NSDictionary *c_dict = [[NSDictionary alloc] initWithObjects:values forKeys:keys];
+    
+    keys = [NSArray arrayWithObjects:@"CData", nil];
+    values = [NSArray arrayWithObjects:c_dict, nil];
+    
+    
+    NSError * err;
+    NSData * jsonData = [NSJSONSerialization dataWithJSONObject:[[NSDictionary alloc] initWithObjects:values forKeys:keys]  options:0 error:&err];
+    
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
 -(void) updateContractor:(Contractor*)contractor {
@@ -376,6 +477,7 @@
         c.www2 = contractor.www2;
         c.www3 = contractor.www3;
         c.trnlocked = contractor.trnlocked;
+        c.limit = contractor.limit;
     } else {
         c = contractor;
         [self.managedObjectContext insertObject:c];
@@ -385,6 +487,59 @@
     c.uptodate = [NSDate date];
     c.visible = [NSNumber numberWithBool:YES];
     [self save];
+}
+
+-(Contractor*) newContractor {
+    
+    
+    Contractor *c = [[Contractor alloc] initWithEntity:[NSEntityDescription entityForName:@"Contractor" inManagedObjectContext:self.managedObjectContext] insertIntoManagedObjectContext:nil];
+    
+    DataExport *de = [[DataExport alloc] initWithEntity:[NSEntityDescription entityForName:@"DataExport" inManagedObjectContext:self.managedObjectContext] insertIntoManagedObjectContext:nil];
+    
+    [self.managedObjectContext insertObject:de];
+    [self.managedObjectContext insertObject:c];
+    
+    de.user = [self getCurrentUser];
+    de.contractor = c;
+    de.added = [NSDate date];
+    de.status = [NSNumber numberWithInt:QSTATUS_EDITING];
+    de.uptodate = nil;
+    
+    NSArray *arr = [self valuesOfDictionaryOfTpe:DICTTYPE_CONTRACTOR_COUNTRY forContractor:c];
+    if ( arr && arr.count ) {
+        c.country = [arr objectAtIndex:0];
+    } else {
+        arr = [self valuesOfDictionaryOfTpe:DICTTYPE_CONTRACTOR_COUNTRY forContractor:nil];
+        if ( arr && arr.count ) {
+            c.country = [arr objectAtIndex:0];
+        } else {
+            c.country = @"Polska";
+        }
+    }
+    
+    c.shortcut = @"";
+    c.name = @"";
+    c.user = de.user;
+    c.dataexport = de;
+    c.visible = [NSNumber numberWithBool:YES];
+    
+    return [self save] ? c : nil;
+};
+
+-(void) removeContractor:(Contractor*)contractor {
+    
+    if ( contractor != nil ) {
+        [self removeFavoriteItem:contractor];
+        [self removeRecentItem:contractor];
+        
+        DataExport *de = contractor.dataexport;
+        
+        [self.managedObjectContext deleteObject:contractor];
+        [self save];
+        
+        [self updateDataExport:de withStatus:QSTATUS_DELETED];
+    }
+    
 }
 
 #pragma mark Invoices
@@ -583,9 +738,10 @@
     return [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
 }
 
--(Order*) fetchOrderByShortcut:(NSString *)Shortcut {
+-(Order*) fetchOrderByShortcut:(NSString *)Shortcut{
     
-    return [self fetchItemByShortcut:Shortcut entityName:@"Order"];
+    
+     return [self fetchItemByShortcut:Shortcut entityName:@"Order"];
 };
 
 -(Order*) fetchOrder:(Order *)order {
@@ -599,7 +755,7 @@
 };
 
 
--(Order*) jsonToOrder:(NSDictionary *)dict {
+-(Order*) jsonToOrder:(NSDictionary *)dict customerShortcut:(NSString **) cshortcut{
     
     if ( !dict
         || ![dict isKindOfClass:[NSDictionary class]] )
@@ -627,6 +783,10 @@
     o.desc = [dict stringValueForKey:@"Description"];
     o.valuerealized = [dict numberValueForKey:@"ValueRealized"];
     
+    if ( [dict objectForKey:@"ContractorID"] != nil ) {
+        *cshortcut =[dict stringValueForKey:@"ContractorID"];
+    }
+    
     return o;
 }
 
@@ -650,6 +810,7 @@
         o = order;
         [self.managedObjectContext insertObject:o];
         o.user = [self getCurrentUser];
+        
     }
     
     o.uptodate = [NSDate date];
@@ -700,13 +861,14 @@
     if ( oi && oi.count > 0 ) {
 
         keys = [NSArray arrayWithObjects:@"Shortcut", @"Name", @"Description", @"WareHouse", @"Price", @"Discount", @"Qty", @"TotalPriceNet", nil];
-        
+  
         for(int a=0;a<oi.count;a++) {
             OrderItem *i = [oi objectAtIndex:a];
             if ( i ) {
                 values = [NSArray arrayWithObjects:i.shortcut ? i.shortcut : @"", i.name ? i.name : @"", @"", @"", i.price == nil ? [NSNumber numberWithDouble:0.00] : i.price, i.discountpercent == nil ? [NSNumber numberWithDouble:0.00] : i.discountpercent, i.qty == nil ? [NSNumber numberWithDouble:1.00] : i.qty, i.totalnet == nil ? [NSNumber numberWithDouble:0.00] : i.totalnet, nil ];
                 [items addObject:[[NSDictionary alloc] initWithObjects:values forKeys:keys]];
             }
+            
         }
     }
     
@@ -720,8 +882,10 @@
     keys = [NSArray arrayWithObjects:@"OData", nil];
     values = [NSArray arrayWithObjects:order_dict, nil];
 
-
-    return [[[NSDictionary alloc] initWithObjects:values forKeys:keys] JSONString];
+    NSError * err;
+    NSData * jsonData = [NSJSONSerialization dataWithJSONObject:[[NSDictionary alloc] initWithObjects:values forKeys:keys]  options:0 error:&err];
+    
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
 
@@ -960,6 +1124,8 @@
                 de.uptodate = [NSDate date];
                 de.shortcut = result.newobject_result.shortcut;
                 de.number = result.newobject_result.number;
+                
+                            
                 [self save];
             }
             
@@ -1053,6 +1219,7 @@
     Article *a = [[Article alloc] initWithEntity:[NSEntityDescription entityForName:@"Article" inManagedObjectContext:self.managedObjectContext] insertIntoManagedObjectContext:nil];
     
     
+    a.codeex = [dict stringValueForKey:@"CodeEx"];
     a.desc = [dict stringValueForKey:@"Description"];
     a.group = [dict stringValueForKey:@"Group"];
     a.name = [dict stringValueForKey:@"Name"];
@@ -1107,6 +1274,30 @@
     return a;
 }
 
+-(ArticleSHItem*) jsonToArticleSHItem:(NSDictionary *)dict {
+    
+    if ( !dict
+        || ![dict isKindOfClass:[NSDictionary class]] )
+        return nil;
+    
+    
+    ArticleSHItem *i = [[ArticleSHItem alloc] initWithEntity:[NSEntityDescription entityForName:@"ArticleSHItem" inManagedObjectContext:self.managedObjectContext] insertIntoManagedObjectContext:nil];
+    
+    i.cshortcut = [dict stringValueForKey:@"ContractorID"];
+    i.cname = [dict stringValueForKey:@"ContractorName"];
+    i.dateofsale = [NSDate dateWithTimeIntervalSince1970:[dict intValueForKey:@"DateOfSale"]];
+    i.invoice = [dict stringValueForKey:@"Invoice"];
+    i.whdoc = [dict stringValueForKey:@"WhDoc"];
+    i.pricenet = [dict numberValueForKey:@"PriceNet"];
+    i.qty = [dict numberValueForKey:@"Qty"];
+    i.unit = [dict stringValueForKey:@"Unit"];
+    i.totalnet = [dict numberValueForKey:@"TotalNet"];
+    i.totalgross = [dict numberValueForKey:@"TotalGross"];
+
+    return i;
+
+}
+
 -(NSNumber*) articleTotalQty:(Article*)article WareHouseId:(NSString*)whid {
  
     NSNumber *result = [NSNumber numberWithDouble:0.00];
@@ -1147,6 +1338,18 @@
     
     return result;
     
+}
+
+-(void) addArticleSHItem:(ArticleSHItem*)item article:(Article*)a {
+    
+    if ( !item ) return;
+    
+    [self.managedObjectContext insertObject:item];
+    
+    item.user = [self getCurrentUser];
+    item.article = a;
+    
+    [self save];
 }
 
 
@@ -1286,11 +1489,37 @@
     return [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
 }
 
+- (NSFetchedResultsController *)fetchedSalesHistoryForArticle:(Article *)article {
+    
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"article = %@ AND user = %@", article, [self getCurrentUser]];
+    [fetchRequest setEntity:[NSEntityDescription entityForName:@"ArticleSHItem" inManagedObjectContext: self.managedObjectContext]];
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"dateofsale" ascending:NO];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    [fetchRequest setSortDescriptors:sortDescriptors];
+    
+    return [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
+}
+
 -(double) articleQtyByUserWarehouse:(Article *)article {
     
      WareHouse *W = [self fetchItemByPredicate:[NSPredicate predicateWithFormat:@"article = %@ AND user = %@ AND user.warehouse != nil AND user.warehouse != %@ AND whid == user.warehouse", article, [self getCurrentUser], @""] entityName:@"WareHouse"];
     
     return W == nil ? 0 : [W.qty doubleValue];
+}
+
+-(void) removeArticleSHItems:(Article*)article {
+    
+    [self deleteAllByPredicate:[NSPredicate predicateWithFormat:@"article = %@ AND user = %@", article, [self getCurrentUser]] entityName:@"ArticleSHItem"];
+    
+}
+
+-(void) updateArticleSHdate:(Article*)article {
+    
+    article.sh_uptodate = [NSDate date];
+    [self save];
 }
 
 #pragma mark Payments
@@ -1324,7 +1553,7 @@
     p.dateofsale = [NSDate dateWithTimeIntervalSince1970:[dict intValueForKey:@"DateOfSale"]];
     p.paymentform = [dict stringValueForKey:@"PaymentMethod"];
     p.termdate = [NSDate dateWithTimeIntervalSince1970:[dict intValueForKey:@"PaymentDeadline"]];
-    p.remaining = [dict numberValueForKey:@"Left"];
+    p.remaining = [dict numberValueForKey:@"Remaining"];
     p.totalnet = [dict numberValueForKey:@"TotalNet"];
     p.totalgross = [dict numberValueForKey:@"TotalGross"];
         
@@ -1634,6 +1863,9 @@
     
     [ACRemoteOperation dictinaryOfType:DICTTYPE_CONTRACTOR_PAYMENTMETHODS forContractor:@""];
     [ACRemoteOperation dictinaryOfType:DICTTYPE_NEWORDER_STATE forContractor:@""];
+    
+    [ACRemoteOperation dictinaryOfType:DICTTYPE_CONTRACTOR_COUNTRY forContractor:@""];
+    [ACRemoteOperation dictinaryOfType:DICTTYPE_CONTRACTOR_REGION forContractor:@""];
     
 }
 

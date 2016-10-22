@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6252" systemVersion="13F34" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="9525" systemVersion="14F1605" minimumToolsVersion="Xcode 4.3">
     <entity name="Article" representedClassName="Article" syncable="YES">
+        <attribute name="codeex" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="desc" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="group" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="pkwiu" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="qty" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="sh_uptodate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="shortcut" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="unit" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="unitlistpricecurr" optional="YES" attributeType="String" syncable="YES"/>
@@ -25,6 +27,20 @@
         <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
     </entity>
+    <entity name="ArticleSHItem" representedClassName="ArticleSHItem" syncable="YES">
+        <attribute name="cname" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="cshortcut" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="dateofsale" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="invoice" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="pricenet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="qty" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="totalgross" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="totalnet" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="unit" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="whdoc" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="article" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Article" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
+    </entity>
     <entity name="Contractor" representedClassName="Contractor" syncable="YES">
         <attribute name="city" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="country" optional="YES" attributeType="String" syncable="YES"/>
@@ -33,6 +49,7 @@
         <attribute name="email3" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="houseno" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="invoices_last_resp_date" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="limit" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="nip" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="orders_last_resp_date" optional="YES" attributeType="Date" syncable="YES"/>
@@ -221,8 +238,9 @@
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Article" positionX="-398" positionY="549" width="128" height="390"/>
-        <element name="Contractor" positionX="214" positionY="138" width="128" height="465"/>
+        <element name="Article" positionX="-398" positionY="549" width="128" height="420"/>
+        <element name="ArticleSHItem" positionX="-396" positionY="-54" width="128" height="225"/>
+        <element name="Contractor" positionX="214" positionY="138" width="128" height="480"/>
         <element name="DataExport" positionX="475" positionY="902" width="128" height="210"/>
         <element name="DataExportMsg" positionX="-101" positionY="1046" width="128" height="88"/>
         <element name="Dict" positionX="-396" positionY="-54" width="128" height="150"/>

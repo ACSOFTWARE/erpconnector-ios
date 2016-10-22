@@ -49,7 +49,7 @@
         self.lServerVer.text = [NSString stringWithFormat:@"%i.%i", Common.HelloData.ver_major, Common.HelloData.ver_minor];
         self.lDrvMfrName.text = Common.HelloData.drv_mfr;
         self.lDrvVer.text = Common.HelloData.drv_ver;
-        self.lAppVer.text = @"1.9.4";
+        self.lAppVer.text = @"2.3";
         self.lIdent.text = Common.UDID;
     }
     self.lLoginName.text = [NSString stringWithString:Common.LoginVC.edLogin.text];

@@ -32,6 +32,7 @@
 #import "PaymentListVC.h"
 #import "Invoice.h"
 #import "ACArticleVC.h"
+#import "ACArticleSalesHistoryVC.h"
 #import "ACComDocListVC.h"
 #import "ACComDocVC.h"
 #import "ACComDocItemVC.h"
@@ -67,12 +68,14 @@ NSString *kGetOrderListDoneNotification = @"n15";
 NSString *kGetOrderItemsDoneNotification = @"n16";
 NSString *kArticleSearchDoneNotification = @"n17";
 NSString *kArticleDataNotification = @"n18";
-NSString *kComDocAddDoneNotification = @"n19";
-NSString *kComDocAddErrorNotification = @"n20";
+NSString *kRemoteAddDoneNotification = @"n19";
+NSString *kRemoteAddErrorNotification = @"n20";
 NSString *kRemoteDataNotification = @"n21";
 NSString *kDictionaryNotification = @"n22";
 NSString *kPriceNotification = @"n23";
 NSString *kGetLimitsDoneNotification = @"n24";
+NSString *kArticleSalesHistoryListDoneNotification = @"n25";
+NSString *kArticleSalesHistoryItemDataNotification = @"n26";
 
 @implementation ACERPCCommon {
     BOOL _Connected;
@@ -93,6 +96,7 @@ NSString *kGetLimitsDoneNotification = @"n24";
     ACComDocItemVC *_ComDocItemVC;
     ACComDocListVC *_OrderListVC;
     ACArticleVC *_ArticleVC;
+    ACArticleSalesHistoryVC *_ArticleSalesHistoryVC;
     ACArticleListVC *_ArticleListVC;
     ACArticleListVC *_ArticleGlobalListVC;
     ACDEWaitingQueue *_ACDEWaitingQueue;
@@ -140,6 +144,7 @@ NSString *kGetLimitsDoneNotification = @"n24";
         _ComDocItemVC = nil;
         _OrderListVC = nil;
         _ArticleVC = nil;
+        _ArticleSalesHistoryVC = nil;
         _exportTimer = nil;
         _connectionStatus = nil;
         _CLimitListVC = nil;
@@ -181,8 +186,13 @@ NSString *kGetLimitsDoneNotification = @"n24";
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGetOrderItemsDone:) name:kGetOrderItemsDoneNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onArticleData:) name:kArticleDataNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onArticleSearchDone:) name:kArticleSearchDoneNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onComDocAddDone:) name:kComDocAddDoneNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onComDocAddError:) name:kComDocAddErrorNotification object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onArticleSHItemData:) name:kArticleSalesHistoryItemDataNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onArticleSHItemDone:) name: kArticleSalesHistoryListDoneNotification object:nil];
+        
+    
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onRemoteAddDone:) name:kRemoteAddDoneNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onRemoteAddError:) name:kRemoteAddErrorNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onPriceData:) name:kPriceNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onLimitData:) name:kGetLimitsDoneNotification object:nil];
         
@@ -409,6 +419,14 @@ NSString *kGetLimitsDoneNotification = @"n24";
     return _ArticleVC;
 }
 
+-(ACArticleSalesHistoryVC*)ArticleSalesHistoryVC {
+    if ( _ArticleSalesHistoryVC == nil ) {
+        _ArticleSalesHistoryVC = [[ACArticleSalesHistoryVC alloc] init];
+    }
+    
+    return _ArticleSalesHistoryVC;
+}
+
 -(ACDataExportVC*)DataExportVC {
     if ( _DataExportVC == nil ) {
         _DataExportVC = [[ACDataExportVC alloc] init];
@@ -515,6 +533,7 @@ NSString *kGetLimitsDoneNotification = @"n24";
 }
 
 -(BOOL)loginVC_Active {
+    
     return self.window.rootViewController == _LoginVC;
 }
 
@@ -553,7 +572,7 @@ NSString *kGetLimitsDoneNotification = @"n24";
                 case QSTATUS_SENT:
                 case QSTATUS_USERCONFIRMATION_WAITING:
                 case QSTATUS_ASYNCREQUEST_CONFIRMED:
-                    return [NSString stringWithFormat:@"%@ (%@)", [ACERPCCommon statusStringWithDataExport:de], status];
+                    return status == nil ? [ACERPCCommon statusStringWithDataExport:de] : [NSString stringWithFormat:@"%@ (%@)", [ACERPCCommon statusStringWithDataExport:de], status];
             }
             
             
@@ -568,6 +587,8 @@ NSString *kGetLimitsDoneNotification = @"n24";
             if ( de.order.customer ) {
                 return [NSString stringWithFormat:@"Zamówienie dla %@", de.order.customer.name];
             }
+        } else if ( de.contractor ) {
+            return [NSString stringWithFormat:@"Nowy Kontrahent %@", de.contractor.name];
         }
     }
     
@@ -744,6 +765,18 @@ NSString *kGetLimitsDoneNotification = @"n24";
     } else if ( _ArticleVC
                && self.navigationController.visibleViewController == _ArticleVC ) {
         [_ArticleVC onRecordDetailData:notif];
+    } else if ( _ComDocItemVC
+               && self.navigationController.visibleViewController == _ComDocItemVC ) {
+        [_ComDocItemVC setSalesHistoryButtonState];
+    }
+}
+
+- (void)onArticleSHItemDone:(NSNotification *)notif {
+    
+    if ( _ArticleSalesHistoryVC
+        && self.navigationController.visibleViewController == _ArticleSalesHistoryVC ) {
+        
+        [_ArticleSalesHistoryVC onRemoteDataDone:notif];
     }
 }
 
@@ -760,6 +793,16 @@ NSString *kGetLimitsDoneNotification = @"n24";
     } else if ( _ArticleGlobalListVC
                && self.navigationController.visibleViewController == _ArticleGlobalListVC ) {
         [_ArticleGlobalListVC onDetailDataItem:notif];
+    };
+}
+
+- (void)onArticleSHItemData:(NSNotification *)notif {
+    
+    if ( _ArticleSalesHistoryVC
+        && self.navigationController.visibleViewController == _ArticleSalesHistoryVC ) {
+        
+        [_ArticleSalesHistoryVC onRecordData:notif];
+
     };
 }
 
@@ -817,9 +860,14 @@ NSString *kGetLimitsDoneNotification = @"n24";
     }
 };
 
-- (void)onComDocAddDone:(NSNotification *)notif {
+- (void)onRemoteAddDone:(NSNotification *)notif {
     
-    if ( _ComDocVC
+    if ( _ContractorVC
+        && self.navigationController.visibleViewController == _ContractorVC ) {
+        
+        [_ContractorVC onRecordAddDone:notif];
+        
+    } else if ( _ComDocVC
         && self.navigationController.visibleViewController == _ComDocVC
         && [_ComDocVC isOrder] ) {
         
@@ -837,7 +885,7 @@ NSString *kGetLimitsDoneNotification = @"n24";
 
 }
 
-- (void)onComDocAddError:(NSNotification *)notif {
+- (void)onRemoteAddError:(NSNotification *)notif {
     
     if ( _ACDEWaitingQueue
                && self.navigationController.visibleViewController == _ACDEWaitingQueue ) {
@@ -930,6 +978,21 @@ NSString *kGetLimitsDoneNotification = @"n24";
     [self.ArticleVC showRecord:article];
 }
 
+- (void)showArticleSalesHistory:(Article*)article {
+    
+    if ( self.HelloData.cap & SERVERCAP_ARTICLE_SALESHISTORY ) {
+        
+        [self.navigationController pushViewController:self.ArticleSalesHistoryVC animated:YES];
+        [self.ArticleSalesHistoryVC showRecord:article];
+        
+    } else {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle: @"" message: NSLocalizedString(@"Ten serwer nie pozwala na przeglądanie historii sprzedaży Skontaktuj się z Administratorem serwera.", nil) delegate: nil cancelButtonTitle: @"OK" otherButtonTitles:nil, nil];
+        [alertView show];
+    }
+    
+
+}
+
 - (void)showArticleList {
     [self.navigationController pushViewController:self.ArticleGlobalListVC animated:YES];
 }
@@ -964,6 +1027,16 @@ NSString *kGetLimitsDoneNotification = @"n24";
     }
     
 }
+
+-(void)newContractor {
+
+    Contractor *c = [Common.DB newContractor];
+    if ( c ) {
+        [Common showContractorVC:c];
+    }
+    
+}
+
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     
@@ -1020,7 +1093,7 @@ static char rstr[] = {
     return [[NSString stringWithUTF8String:hexmac] uppercaseString];
 }
 
-+(NSString*) Base64encodeWithCString:(const char*)bytes_to_encode length:(int)in_len {
++(NSString*) Base64encodeWithCString:(const char*)bytes_to_encode length:(unsigned long)in_len {
     
     NSMutableString *ret = [[NSMutableString alloc] init];
 
@@ -1072,7 +1145,7 @@ static char rstr[] = {
 -(NSString*) Base64encode {
 
     const char *bytes_to_encode = [self cStringUsingEncoding:NSUTF8StringEncoding];
-    int in_len = bytes_to_encode == NULL ? 0 : strlen(bytes_to_encode);
+    unsigned long in_len = bytes_to_encode == NULL ? 0 : strlen(bytes_to_encode);
     
     return [NSString Base64encodeWithCString:bytes_to_encode length:in_len];
 
@@ -1175,6 +1248,7 @@ static char rstr[] = {
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
+
 -(double)doubleValueWithLocalization {
     return [[self stringByReplacingOccurrencesOfString:[[NSLocale currentLocale] objectForKey: NSLocaleDecimalSeparator] withString:@"."] doubleValue];
 }
@@ -1191,7 +1265,7 @@ static char rstr[] = {
 
 -(int) intValueForKey:(NSString*)key {
     NSNumber *n = [self valueForKey:key];
-    return n == nil || ![n isKindOfClass:[NSNumber class]] ? 0 : [n integerValue];
+    return n == nil || ![n isKindOfClass:[NSNumber class]] ? 0 : [n intValue];
 };
 
 -(double) doubleValueForKey:(NSString*)key {

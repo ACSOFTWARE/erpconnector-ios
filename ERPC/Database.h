@@ -29,6 +29,7 @@
 @class Order;
 @class OrderItem;
 @class Article;
+@class ArticleSHItem;
 @class DataExport;
 @class ACRemoteActionResultAsync;
 @class ACRemoteActionResultDict;
@@ -41,9 +42,12 @@
 - (BOOL)performFetch:(NSFetchedResultsController *)frc;
 
 -(Contractor*) jsonToContractor:(NSDictionary *)dict;
+-(NSString*) contractorTojsonString:(Contractor*)contractor autoShortcut:(BOOL)as;
+-(Contractor*) newContractor;
 -(void) updateContractor:(Contractor*)contractor;
--(Contractor*) fetchContractorByShortcut:(NSString *)Shortcut;
+-(void) removeContractor:(Contractor*)contractor;
 -(Contractor*) fetchContractor:(Contractor*)contractor;
+-(Contractor*) fetchContractorByShortcut:(NSString *)Shortcut;
 -(NSFetchedResultsController *)fetchedContractorsWithText:(NSString *)txt;
 
 -(NSFetchedResultsController *)fetchedInvoicesForContractor:(Contractor *)c;
@@ -61,7 +65,7 @@
 -(NSFetchedResultsController *)fetchedOrdersForContractor:(Contractor *)c;
 -(NSFetchedResultsController *)fetchedItemsOfOrder:(Order *)order;
 -(Order*) fetchOrderByShortcut:(NSString *)Shortcut;
--(Order*) jsonToOrder:(NSDictionary *)dict;
+-(Order*) jsonToOrder:(NSDictionary *)dict customerShortcut:(NSString **) cshortcut;
 -(void) updateOrder:(Order*)order customer:(Contractor*)c;
 -(OrderItem*) jsonToOrderItem:(NSDictionary *)dict;
 -(void) insertOrderItem:(OrderItem*)oi order:(Order*)o;
@@ -78,7 +82,9 @@
 -(NSDate*)minUnvisibleOrderDateWithContractor:(Contractor *)c;
 
 -(Article*) jsonToArticle:(NSDictionary *)dict qty:(NSNumber**)Qty warehouseid:(NSString **)WareHouseId warehousename:(NSString **)WareHouseName;
+-(ArticleSHItem*) jsonToArticleSHItem:(NSDictionary *)dict;
 -(void) updateArticle:(Article*)article qty:(NSNumber*)Qty warehouseid:(NSString *)WareHouseId warehousename:(NSString *)WareHouseName;
+-(void) addArticleSHItem:(ArticleSHItem*)item article:(Article*)a;
 -(Article*) fetchArticleByShortcut:(NSString *)Shortcut;
 -(Article*) fetchArticle:(Article *)article;
 -(NSFetchedResultsController *)fetchedArticlesWithText:(NSString *)txt;
@@ -86,6 +92,9 @@
 -(void) addArticleByShortcut:(NSString*)shortcut ToOrder:(Order*)order;
 - (NSFetchedResultsController *)fetchedWarehousesForArticle:(Article *)article;
 -(double) articleQtyByUserWarehouse:(Article *)article;
+-(void) removeArticleSHItems:(Article*)article;
+-(void) updateArticleSHdate:(Article*)article;
+- (NSFetchedResultsController *)fetchedSalesHistoryForArticle:(Article *)article;
 
 - (NSFetchedResultsController *)fetchedPaymentsForContractor:(Contractor *)c;
 -(Payment*) jsonToPaymentItem:(NSDictionary *)dict;
@@ -99,8 +108,6 @@
 -(void) addToFavorites:(id)obj;
 -(void) removeFavoriteItem:(id)obj;
 
--(Invoice*) jsonToInvoice:(NSDictionary *)dict;
--(void) updateInvoice:(Invoice*)invoice customer:(Contractor*)c;
 -(NSFetchedResultsController *)fetchedHistory;
 -(NSFetchedResultsController *)fetchedFavorites;
 

@@ -76,7 +76,7 @@
 @property (weak, nonatomic)NSString *selection;
 @property (weak, nonatomic)UIColor *textColor;
 @property (nonatomic)BOOL hideIfEmpty;
-@property (nonatomic)int numberOfLines;
+@property (nonatomic)long numberOfLines;
 @end
 
 @interface ACUIMultiDataItem : ACUIDataItem

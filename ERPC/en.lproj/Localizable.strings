@@ -95,6 +95,7 @@
 
 "Ten serwer nie pozwala na przeglądanie asortymentu. Skontaktuj się z Administratorem serwera." = "This server does not allow to review the stock. Please contact server Administrator.";
 
+"Ten serwer nie pozwala na przeglądanie historii sprzedaży Skontaktuj się z Administratorem serwera." = "This server does not allow to review Sales History. Please contact server Administrator.";
 
 "Nowe zamówienie" = "New order";
 "Zamówienie nr:" = "Order #";
@@ -147,3 +148,9 @@
 
 "adres" = "address";
 "telefom" = "phone";
+
+"Artykuł - Historia Sprzedaży" = "Article - Sales History";
+"Artykuł" = "Article";
+
+"Czy chcesz zapisać te poświadczenia dla autentykacji poprzez TouchID ?" = "Do you want to save these credentials for authentication by TouchID ?";
+"Autentykacja użytkownika" = "User authentication";

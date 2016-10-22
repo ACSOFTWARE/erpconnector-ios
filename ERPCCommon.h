@@ -39,6 +39,7 @@
 #define SERVERCAP_NEWINVOICE                   0x0000000000008000
 #define SERVERCAP_NEWORDER                     0x0000000000010000
 #define SERVERCAP_ADDCONTRACTOR                0x0000000000020000
+#define SERVERCAP_ARTICLE_SALESHISTORY         0x0000000000040000
 
 #define QSTATUS_EDITING                        0
 #define QSTATUS_WAITING                        1
@@ -61,6 +62,7 @@
 @class ACPaymentListVC;
 @class ACRemoteActionResultHello;
 @class ACArticleVC;
+@class ACArticleSalesHistoryVC;
 @class ACComDocVC;
 @class ACComDocItemVC;
 @class ACComDocPreviewVC;
@@ -91,12 +93,13 @@
 - (void)showComDocPreview:(id)record;
 - (void)selectArticlesForDocument:(id)record;
 - (void)showArticle:(Article*)article;
+- (void)showArticleSalesHistory:(Article*)article;
 - (void)showArticleList;
 - (void)showDataExportItem:(DataExport*)de;
 - (void)showLimitsForContractor:(Contractor*)c;
 - (void)newOrderForCustomer:(Contractor*)c;
+- (void)newContractor;
 -(void)CheckTimeout;
--(BOOL)loginVC_Active;
 -(BOOL)exportInProgress:(DataExport*)de;
 +(NSString*)statusStringWithDataExport:(DataExport*)de;
 +(NSString*)statusStringWithDataExport:(DataExport*)de andStatusString:(NSString*)status;
@@ -128,6 +131,7 @@
 @property (readonly, nonatomic) ACComDocPreviewVC *ComDocPreviewVC;
 @property (readonly, nonatomic) ACPaymentListVC *PaymentListVC;
 @property (readonly, nonatomic) ACArticleVC *ArticleVC;
+@property (readonly, nonatomic) ACArticleSalesHistoryVC *ArticleSalesHistoryVC;
 @property (readonly, nonatomic) ACComDocVC *ComDocVC;
 @property (readonly, nonatomic) ACComDocItemVC *ComDocItemVC;
 @property (readonly, nonatomic) ACArticleListVC *ArticleGlobalListVC;
@@ -142,7 +146,7 @@
 @interface NSString (ERPC)
 - (NSString*) HMACWithSecret:(NSString*) secret;
 -(NSString*) Base64encode;
-+(NSString*) Base64encodeWithCString:(const char*)bytes_to_encode length:(int)in_len;
++(NSString*) Base64encodeWithCString:(const char*)bytes_to_encode length:(unsigned long)in_len;
 +(NSString*) Base64encodeForUrlWithCString:(const char*)bytes_to_encode length:(int)in_len;
 -(unsigned char*) Base64decode:(int*)OutLen;
 -(NSData*) Base64decode;
@@ -191,8 +195,10 @@ extern NSString *kGetOrderListDoneNotification;
 extern NSString *kGetOrderItemsDoneNotification;
 extern NSString *kArticleSearchDoneNotification;
 extern NSString *kArticleDataNotification;
-extern NSString *kComDocAddDoneNotification;
-extern NSString *kComDocAddErrorNotification;
+extern NSString *kRemoteAddDoneNotification;
+extern NSString *kRemoteAddErrorNotification;
 extern NSString *kDictionaryNotification;
 extern NSString *kPriceNotification;
 extern NSString *kGetLimitsDoneNotification;
+extern NSString *kArticleSalesHistoryListDoneNotification;
+extern NSString *kArticleSalesHistoryItemDataNotification;

@@ -29,6 +29,7 @@
 #import "MFSideMenu/MFSideMenu.h"
 #import "RemoteAction.h"
 #import "BackgroundOperations.h"
+#import "ACUIArticleButton1.h"
 
 @implementation ACComDocItemVC {
     
@@ -43,6 +44,7 @@
     ACUIDataItem *di_totalnet;
     ACUIDataItem *di_totalgross;
     ACUIDeleteBtn *btnDel;
+    ACUIArticleButton1 *btnSH;
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -63,6 +65,12 @@
         di_qty = [self.form CreateDataItem:@"ilość"];
         di_totalnet = [self.form CreateDataItem:@"razem netto"];
         di_totalgross = [self.form CreateDataItem:@"razem brutto"];
+        
+        btnSH = [[ACUIArticleButton1 alloc] initWithNamedNib:@"ACUIArticleButton1" form:self.form];
+        btnSH.topMargin = 20;
+        btnSH.btnHistory.enabled = NO;
+        [btnSH.btnHistory addTarget:self action:@selector(salesHistoryTouch:) forControlEvents:UIControlEventTouchDown];
+        [self.form AddUIPart:btnSH];
         
     }
     return self;
@@ -115,13 +123,16 @@
     
     
     if ([self orderItem]) {
+        
+        NSNumber *price = [self.orderItem.pricenet doubleValue] > 0 ? self.orderItem.pricenet : self.orderItem.price;
+        
         self.form.Title = [NSString stringWithFormat:@"%@ %@", NSLocalizedString(@"Pozycja zamówienia", nil), self.orderItem.order.number];
         di_shortcut.data = self.orderItem.shortcut;
         di_name.data = self.orderItem.name;
         [di_vatrate setDoubleValue:[self.orderItem.vatrate doubleValue] withSuffix:@"%"];
         [di_vatvalue setMoneyValue:[self.orderItem.vatvalue doubleValue]];
-        [di_price setMoneyValue:[self.orderItem.price doubleValue]];
-        [di_pricegross setMoneyValue:[self.orderItem.price addVatByRate:self.orderItem.vatrate]];
+        [di_price setMoneyValue:[price doubleValue]];
+        [di_pricegross setMoneyValue:[price addVatByRate:self.orderItem.vatrate]];
         [di_discount setDoubleValue:[self.orderItem.discountpercent doubleValue] withSuffix:@"%"];
         di_discount.readonly = ![[self orderItem].order.dataexport.status isEqualToNumber:[NSNumber numberWithInt:QSTATUS_EDITING]];
         [di_qty setDoubleValue:[self.orderItem.qty doubleValue] withSuffix:self.orderItem.unit];
@@ -136,7 +147,7 @@
         
         if ( self.orderItem.order.dataexport != nil
              && (Common.HelloData.cap & SERVERCAP_INDIVIDUALPRICES) > 0
-             && [self.orderItem.pricenet doubleValue] > 0
+             && [price doubleValue] > 0
              && [self.orderItem.individualprice boolValue] == NO ) {
             [di_price addDetailButtonWithImageName:@"warning.png" addTarget:self touchAction:@selector(pricewarning:)];
         }
@@ -178,6 +189,37 @@
         }
     }
     
+    if ( [Common.DB fetchArticleByShortcut:di_shortcut.data] == nil ) {
+        btnSH.btnHistory.enabled = NO;
+        btnSH.btnHistory.alpha = 0.5;
+        
+        [ACRemoteOperation articleSearch:di_shortcut.data mtu:3];
+        
+    } else {
+        btnSH.btnHistory.enabled = YES;
+        btnSH.btnHistory.alpha = 1;
+    }
+    
+
+    
+}
+
+-(BOOL)setSalesHistoryButtonState {
+    
+    if ( [Common.DB fetchArticleByShortcut:di_shortcut.data] == nil ) {
+        btnSH.btnHistory.enabled = NO;
+        btnSH.btnHistory.alpha = 0.5;
+        
+        return NO;
+        
+    };
+    
+    
+    btnSH.btnHistory.enabled = YES;
+    btnSH.btnHistory.alpha = 1;
+    
+    return YES;
+
 }
 
 +(void)calculateOrderItem:(OrderItem*)oi priceNet:(double)net discount:(double)discount qty:(double)qty vatRate:(double)vat {
@@ -252,6 +294,22 @@
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle: @"" message: NSLocalizedString(@"Cena wyjściowa dla tego towaru nie została pobrana z serwera dla tego Klienta.", nil) delegate: nil cancelButtonTitle: @"OK" otherButtonTitles:nil, nil];
     [alertView show];
+}
+
+- (IBAction)salesHistoryTouch:(id)sender {
+    
+    Article *article = [Common.DB fetchArticleByShortcut:di_shortcut.data];
+    
+    if ( article != nil )
+      [Common showArticleSalesHistory:article];
+    
+}
+
+-(void)fetchRemoteDataWithRefreshTouch:(BOOL)rtouch {
+    
+    if ( [self setSalesHistoryButtonState] == NO ) {
+        [ACRemoteOperation articleSearch:di_shortcut.data mtu:3];
+    }
 }
 
 

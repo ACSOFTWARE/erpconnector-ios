@@ -37,6 +37,7 @@
 +(void)orderByShortcut:(NSString*)shortcut;
 +(void)itemsForOrderByShortcut:(NSString*)oshortcut mtu:(int)MTU;
 +(void)articleSearch:(NSString*)text mtu:(int)MTU;
++(void)articleSalesHistory:(NSString*)shortcut mtu:(int)MTU;
 +(void)dictinaryOfType:(int)type forContractor:(NSString*)contractor;
 +(void)priceForContractor:(NSString*)contractor withArticleShortcut:(NSString*)article currency:(NSString*)currency;
 +(void)limitForContractor:(NSString*)contractor;

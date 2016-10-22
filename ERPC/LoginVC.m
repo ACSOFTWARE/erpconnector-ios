@@ -23,7 +23,8 @@
 #import "RemoteAction.h"
 #import "ERPCCommon.h"
 #import "AppDelegate.h"
-
+#import "KeychainItemWrapper.h"
+#import <LocalAuthentication/LocalAuthentication.h>
 
 @interface ACLoginVC ()
 
@@ -33,6 +34,7 @@
 
     NSTimer *delayTimer1;
     NSTimer *delayTimer2;
+    BOOL credentialsEdited;
 }
 
 - (void)viewDidLoad
@@ -42,6 +44,18 @@
     delayTimer1 = nil;
     delayTimer2 = nil;
 	// Do any additional setup after loading the view, typically from a nib.
+    
+    NSString *l = [[NSUserDefaults standardUserDefaults] stringForKey:@"login_preference"];
+    if ( l ) {
+        [self.edLogin setText:l];
+    }
+    
+    
+    if ( [[[LAContext alloc] init] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] ) {
+        _btnTIDAuth.hidden = NO;
+    } else {
+        _btnTIDAuth.hidden = YES;
+    }
 }
 
 - (void)viewDidUnload
@@ -55,13 +69,36 @@
     // Release any retained subviews of the main view.
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    
+    if ( self.btnTIDAuth.hidden == NO ) {
+        
+        KeychainItemWrapper *keychainItem = [[KeychainItemWrapper alloc] initWithIdentifier:@"ERPC" accessGroup:nil];
+        
+        NSString *password = [keychainItem objectForKey:kSecValueData];
+        NSString *username = [keychainItem objectForKey:kSecAttrAccount];
+        
+        if ( password != nil && password.length > 0
+            && username != nil && username.length > 0 ) {
+            
+            [self touchTIDAuthBtn:self];
+        }
+    }
+
+    
+    
+}
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [self.view endEditing:YES];
 }
 
 - (NSUInteger)supportedInterfaceOrientations {
-    return UIDeviceOrientationPortrait|UIDeviceOrientationPortraitUpsideDown;
+    return  UIDeviceOrientationPortrait|UIDeviceOrientationPortraitUpsideDown;
 }
 
 - (void)onRemoteLoginResult:(NSNotification *)notif {
@@ -121,6 +158,8 @@
 
 - (IBAction)endEditEvent:(id)sender {
     delayTimer1 = [NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(moveToZeroPos:) userInfo:nil repeats:NO];
+    
+    credentialsEdited = YES;
 }
 
 - (void)onConnectionError:(NSNotification *)notif {
@@ -161,6 +200,8 @@
 
 - (IBAction)touchLoginBtn:(id)sender {
     
+    credentialsEdited = NO;
+    
     if ( Common.ServerAddress == nil
         || [Common.ServerAddress isEqualToString:@""] ) {
         
@@ -169,6 +210,8 @@
         [alert show];
 
     } else {
+        
+        [[NSUserDefaults standardUserDefaults] setValue:self.edLogin.text forKey:@"login_preference"];
         
         Common.Connected = NO;
         Common.Login = self.edLogin.text;
@@ -190,6 +233,79 @@
     };
     
 }
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if ( buttonIndex == 1 ) {
+        
+        KeychainItemWrapper *keychainItem = [[KeychainItemWrapper alloc] initWithIdentifier:@"ERPC" accessGroup:nil];
+        
+        [keychainItem setObject:self.edPassword.text forKey:kSecValueData];
+        [keychainItem setObject:self.edLogin.text forKey:kSecAttrAccount];
+        
+    }
+
+}
+
+- (void)touchIDAuthSuccess {
+    
+    KeychainItemWrapper *keychainItem = [[KeychainItemWrapper alloc] initWithIdentifier:@"ERPC" accessGroup:nil];
+    
+    NSString *password = [keychainItem objectForKey:kSecValueData];
+    NSString *username = [keychainItem objectForKey:kSecAttrAccount];
+    
+    
+    [self.edLogin setText:username == nil ? @"" : username];
+    [self.edPassword setText:password == nil ? @"" : password];
+    
+    
+    if ( self.edLogin.text.length > 0
+        && self.edPassword.text.length > 0 ) {
+        
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate date]];
+        
+       [self touchLoginBtn:self];
+    }
+    
+}
+
+- (IBAction)touchTIDAuthBtn:(id)sender {
+    
+    
+    if ( credentialsEdited ) {
+        
+        credentialsEdited = NO;
+        
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Touch ID" message:NSLocalizedString(@"Czy chcesz zapisać te poświadczenia dla autentykacji poprzez TouchID ?", nil) delegate:self cancelButtonTitle:NSLocalizedString(@"Nie", nil) otherButtonTitles:@"Tak", nil];
+        [alert show];
+        
+    } else {
+        
+        LAContext *context = [[LAContext alloc] init];
+        NSError *error = nil;
+        NSString *reason = NSLocalizedString(@"Autentykacja użytkownika", nil);
+        
+        if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
+            [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                    localizedReason:reason
+                              reply:^(BOOL success, NSError *error) {
+                                  if (success) {
+                                      
+                                      NSLog(@"Auth was OK");
+                                      [self performSelectorOnMainThread:@selector(touchIDAuthSuccess) withObject:nil waitUntilDone:NO];
+
+                                  }
+                                  else {
+                                      NSLog(@"Error received: %@", error);
+                                  }
+                              }];
+        }
+        
+    }
+
+    
+}
+
 -(void)localAuth:(id)sender {
     
     if ( self.activityIndicator.hidden == NO
@@ -203,11 +319,4 @@
 };
 
 
-/*
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if ( alertView.tag == 1 ) {
-         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs://"]];
-    }
-}
-*/
 @end

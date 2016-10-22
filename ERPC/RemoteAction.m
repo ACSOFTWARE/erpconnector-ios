@@ -18,9 +18,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#import <Security/Security.h>
 #import "RemoteAction.h"
 #import "ERPCCommon.h"
-#import "JSONKit.h"
 #include "zlib.h"
 
 
@@ -182,6 +182,8 @@
     if ( self ) {
         _requestID = nil;
         _newobject_result = nil;
+        
+        
     }
     
     return self;
@@ -253,6 +255,7 @@
 - (id)init {
     
     self = [super init];
+    
     
     received_data = nil;
     content_type = nil;
@@ -481,7 +484,10 @@
         #endif
         _result.status.code = 10;
         
-        NSDictionary *Dict = [data_str objectFromJSONString];
+        NSError *err;
+        NSDictionary *Dict = (NSDictionary *)[NSJSONSerialization JSONObjectWithData:[data_str dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingMutableContainers error:&err];
+        
+
         data_str = nil;
         
         bool postErrorNotification = YES;
@@ -503,6 +509,8 @@
                 
             case ACTION_NEW_ORDER:
             case ACTION_NEW_ORDER_CONFIRM:
+            case ACTION_ADD_CONTRACTOR:
+            case ACTION_ADD_CONTRACTOR_CONFIRM:
                 _result = [[ACRemoteActionResultAsync alloc] init];
                 postErrorNotification = NO;
                 break;
@@ -542,9 +550,12 @@
                 case ACTION_INVOICE_DOC:
                     [self assignResult:(ACRemoteActionResultDocument*)_result withDocumentData:Dict];
                     break;
-                case ACTION_NEW_ORDER:
+                    
                 case ACTION_ASYNC_NEWORDER_FETCHRESULT:
+                case ACTION_NEW_ORDER:
                 case ACTION_NEW_ORDER_CONFIRM:
+                case ACTION_ADD_CONTRACTOR:
+                case ACTION_ADD_CONTRACTOR_CONFIRM:
                     [self assignResult:(ACRemoteActionResultAsync*)_result withAsyncData:Dict];
                     break;
                 case ACTION_GETDICTIONARY:
@@ -738,6 +749,8 @@
         if ([D boolValueForKey:@"NewOrder"] == YES )
             result.cap |= SERVERCAP_NEWORDER;
         
+        if ([D boolValueForKey:@"ArticleSalesHistory"] == YES )
+            result.cap |= SERVERCAP_ARTICLE_SALESHISTORY;
         
     };
     
@@ -1072,7 +1085,7 @@
         ACRemoteActionResultHello *h = (ACRemoteActionResultHello*)_result;
         
         if ( h.ver_major == 3
-            && h.ver_minor == 7 ) {
+            && h.ver_minor == 9 ) {
             
             if ( [h.dev_regstate isEqualToString:@"unregistered"] ) {
                 return HELLO_UNREGISTERED;
@@ -1180,6 +1193,14 @@
 - (BOOL) articleSearch:(NSString*)text maxCount:(int)maxcount {
     _Action = ACTION_ARTICLE_SIMPLESEARCH;
     [self requestWithAction:@"Article_SimpleSearch" andParams:[NSString stringWithFormat:@"CodeOrName=%@&MaxCount=%i", [text Base64encodeForUrl], maxcount]];
+    
+    return _result.status.success;
+}
+
+- (BOOL) articleSalesHistory:(NSString*)shortcut maxCount:(int)maxcount {
+    
+    _Action = ACTION_ARTICLE_SALESHISTORY;
+    [self requestWithAction:@"ArticleSalesHistory" andParams:[NSString stringWithFormat:@"Code=%@&MaxCount=%i", [shortcut Base64encodeForUrl], maxcount]];
     
     return _result.status.success;
 }
@@ -1331,6 +1352,18 @@
 - (BOOL) confirmOrderByRefID:(NSString*)refID {
     _Action = ACTION_NEW_ORDER_CONFIRM;
     [self requestWithAction:@"NewOrder_Confirm" andParams:[NSString stringWithFormat:@"Async=1&RefID=%@", refID]];
+    return _result.status.success;
+}
+
+- (BOOL) addContractor:(NSString*)jsonData {
+    _Action = ACTION_ADD_CONTRACTOR;
+    [self requestWithAction:@"AddContractor" andParams:[NSString stringWithFormat:@"Async=1&%@", [self jsonParams:jsonData]]];
+    return _result.status.success;
+}
+
+- (BOOL) confirmContractorByRefID:(NSString*)refID {
+    _Action = ACTION_ADD_CONTRACTOR_CONFIRM;
+    [self requestWithAction:@"AddContractor_Confirm" andParams:[NSString stringWithFormat:@"Async=1&RefID=%@", refID]];
     return _result.status.success;
 }
 

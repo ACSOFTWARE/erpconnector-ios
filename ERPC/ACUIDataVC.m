@@ -112,8 +112,10 @@
         
         id _new = [self newRecord];
         
-        if ( _new ) {
+        if ( _new && _new != _record ) {
             _record = _new;
+            
+            [self _fetchRemoteDetailDataWithRefreshTouch:NO];
         }
         
         [_form onFocusIn:nil];
@@ -171,11 +173,14 @@
     }
 }
 
-- (void)_fetchRemoteDataByShortcut:(NSString*)shortcut RefreshTouch:(BOOL)rtouch {
+- (BOOL)_fetchRemoteDataByShortcut:(NSString*)shortcut RefreshTouch:(BOOL)rtouch {
     
     if ([self respondsToSelector:@selector(fetchRemoteDataByShortcut:RefreshTouch:)]) {
         [(ACUIDataVC <ACUIFormDataSource> *)self  fetchRemoteDataByShortcut:shortcut RefreshTouch:rtouch];
+        return YES;
     }
+    
+    return NO;
 }
 
 - (void)_fetchRemoteDetailDataWithRefreshTouch:(BOOL)rtouch {
@@ -237,12 +242,8 @@
             && de.shortcut
             && de.shortcut.length > 0 ) {
             
-            id r = [self _fetchRecordByShortcut:de.shortcut];
-            
-            if ( r && r != _record ) {
-                result = r;
-                [self _fetchRemoteDetailDataWithRefreshTouch:NO];
-            }
+            result = [self _fetchRecordByShortcut:de.shortcut];
+        
         }
     }
     

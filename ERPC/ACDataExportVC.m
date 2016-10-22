@@ -24,6 +24,7 @@
 #import "Order.h"
 #import "Contractor.h"
 #import "ACComDocVC.h"
+#import "ACContractorVC.h"
 #import "ACUIDataExportButtons.h"
 #import "ACUIDeleteBtn.h"
 #import "MFSideMenu/MFSideMenu.h"
@@ -87,6 +88,7 @@
 }
 
 
+
 -(NSFetchedResultsController*)frc {
     return _frc;
 }
@@ -105,10 +107,18 @@
     
     if ( self.de ) {
         
+        if ( [self.de.status isEqualToNumber:[NSNumber numberWithInt:QSTATUS_DONE]] ) {
+            [self backButtonPressed:self];
+            return;
+        }
+        
         if ( self.de.order ) {
             di_object.data = [ACERPCCommon dateExportTitle:self.de];
             [btns.btnEdit setTitle:@"Edytuj dane zamówienia"];
-        }
+        } else if ( self.de.contractor ) {
+            di_object.data = [ACERPCCommon dateExportTitle:self.de];
+            [btns.btnEdit setTitle:@"Edytuj dane Kontrahenta"];
+        };
         
         if ( ![self objectVCisPrevious] ) {
             [di_object addDetailButtonWithImageName:@"detail.png" addTarget:self touchAction:@selector(detailTouch:)];
@@ -143,14 +153,16 @@
     [self onRecordData:nil];
 }
 
-- (ACUIDataVC*)objectVCisPrevious {
+- (id)objectVCisPrevious {
     id v = nil;
     
     if ( Common.navigationController.viewControllers.count > 1 ) {
         v = [Common.navigationController.viewControllers objectAtIndex:Common.navigationController.viewControllers.count-2];
-        if ( [v isKindOfClass:[ACComDocVC class]]) {
+        if ( self.de.order && [v isKindOfClass:[ACComDocVC class]]) {
             return v;
-        }
+        } else if ( self.de.contractor && [v isKindOfClass:[ACContractorVC class]]) {
+            return v;
+        };
     }
     
     return nil;
@@ -164,7 +176,12 @@
     if ( [self objectVCisPrevious] ) {
         [self backButtonPressed:sender];
     } else {
-        [Common showComDoc:self.de.order];
+        if ( self.de.order ) {
+            [Common showComDoc:self.de.order];
+        } else if ( self.de.contractor ) {
+            [Common showContractorVC:self.de.contractor];
+        };
+        
     }
 };
 
@@ -193,13 +210,28 @@
 }
 
 -(void)doDelete:(id)sender {
-    ACComDocVC *cdoc = (ACComDocVC*)[self objectVCisPrevious];
     
-    if ( cdoc ) {
-        [cdoc showRecord:nil];
-        [cdoc removeFromParentViewController];
-        [Common.DB removeOrder:self.de.order];
+    if ( self.de.order ) {
+        
+        ACComDocVC *cdoc = (ACComDocVC*)[self objectVCisPrevious];
+        
+        if ( cdoc ) {
+            [cdoc showRecord:nil];
+            [cdoc removeFromParentViewController];
+            [Common.DB removeOrder:self.de.order];
+        }
+        
+    } else if ( self.de.contractor ) {
+        
+        ACContractorVC *cvc = (ACContractorVC*)[self objectVCisPrevious];
+        
+        if ( cvc ) {
+            [cvc showRecord:nil];
+            [cvc removeFromParentViewController];
+            [Common.DB removeContractor:self.de.contractor];
+        }
     }
+
     
     [self backButtonPressed:self];
 }
@@ -207,13 +239,9 @@
 -(void)detailTouch:(id)sender {
     if ( self.de ) {
         if ( self.de.order ) {
-            Order *order = self.de.order;
-            if ( self.de.shortcut
-                 && self.de.shortcut.length > 0 ) {
-                order = [Common.DB fetchOrderByShortcut:self.de.shortcut];
-            }
-            
-            [Common showComDoc:order];
+            [Common showComDoc:self.de.order];
+        } else if ( self.de.contractor ) {
+            [Common showContractorVC:self.de.contractor];
         }
     };
 }

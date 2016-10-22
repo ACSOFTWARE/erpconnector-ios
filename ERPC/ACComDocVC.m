@@ -29,9 +29,9 @@
 #import "ACComDocItemVC.h"
 #import "ERPCCommon.h"
 #import "RemoteAction.h"
-#import "ACUICDocButtons.h"
 #import "ACUICDocButtons2.h"
 #import "ACUIDeleteBtn.h"
+#import "ACUIExportBtn.h"
 #import "ACDataExportVC.h"
 #import "IndividualPrice.h"
 #import "MFSideMenu/MFSideMenu.h"
@@ -45,8 +45,8 @@
     ACUIDataItem *di_desc;
     ACUICDocSummary *summary;
     ACUITableView *itv;
-    ACUICDocButtons *btns;
-    ACUICDocButtons2 *btns2;
+    ACUIExportBtn *btnExport;
+    ACUICDocButtons2 *btns;
     ACUIDeleteBtn *btnDel;
     NSFetchedResultsController *_frc;
     BOOL _canCheckPrice;
@@ -72,7 +72,7 @@
         itv.dataSource = self;
         itv.rowHeight = 34;
         btns = nil;
-        btns2 = nil;
+        btnExport = nil;
         btnDel = nil;
         summary = [self.form CreateCDocSummary];
         
@@ -203,9 +203,9 @@
         btns = nil;
     }
     
-    if ( btns2 ) {
-        [self.form RemoveUIPart:btns2];
-        btns2 = nil;
+    if ( btnExport ) {
+        [self.form RemoveUIPart:btnExport];
+        btnExport = nil;
     }
     
     if ( btnDel ) {
@@ -250,6 +250,7 @@
                 [self checkIndividualPrices];
             }
             
+            
         } else {
             
             
@@ -265,15 +266,16 @@
             self.form.refreshPanel.refreshBtnHidden = NO;
             [self showFavBtn];
             
+            
         }
         
         if ( !di_pm.readonly ) {
             
-            if ( btns == nil ) {
-                btns = [[ACUICDocButtons alloc] initWithNamedNib:@"ACUICDocButtons" form:self.form];
-                btns.topMargin = 20;
-                [btns.btnSend addTarget:self action:@selector(sendTouch:) forControlEvents:UIControlEventTouchDown];
-                [self.form AddUIPart:btns];
+            if ( btnExport == nil ) {
+                btnExport = [[ACUIExportBtn alloc] initWithNamedNib:@"ACUIExportBtn" form:self.form];
+                btnExport.topMargin = 20;
+                [btnExport.btnSend addTarget:self action:@selector(sendTouch:) forControlEvents:UIControlEventTouchDown];
+                [self.form AddUIPart:btnExport];
             }
 
             [self addAddButtonWithSelector:@selector(addTouch:)];
@@ -322,11 +324,11 @@
         
         [summary setNet:[self.invoice.totalnet doubleValue] andGross:[self.invoice.totalgross doubleValue]];
         
-        if ( btns2 == nil ) {
-            btns2 = [[ACUICDocButtons2 alloc] initWithNamedNib:@"ACUICDocButtons2" form:self.form];
-            btns2.topMargin = 20;
-            [btns2.btnPreview addTarget:self action:@selector(previewTouch:) forControlEvents:UIControlEventTouchDown];
-            [self.form AddUIPart:btns2];
+        if ( btns == nil ) {
+            btns = [[ACUICDocButtons2 alloc] initWithNamedNib:@"ACUICDocButtons2" form:self.form];
+            btns.topMargin = 20;
+            [btns.btnPreview addTarget:self action:@selector(previewTouch:) forControlEvents:UIControlEventTouchDown];
+            [self.form AddUIPart:btns];
         }
     }
     
@@ -363,7 +365,7 @@
 }
 
 - (IBAction)addTouch:(id)sender {
-    if ( btns.btnSend.hidden == NO ) {
+    if ( btnExport.btnSend.hidden == NO ) {
         [Common selectArticlesForDocument:self.order];
     }
 }
@@ -390,8 +392,8 @@
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     if ( buttonIndex == 0 ) {
         
-        btns.btnSend.enabled = NO;
-        btns.btnSend.hidden = YES;
+        btnExport.btnSend.enabled = NO;
+        btnExport.btnSend.hidden = YES;
         [Common.DB updateDataExport:self.order.dataexport withStatus:QSTATUS_WAITING];
         [self onRecordDetailData:nil];
     }

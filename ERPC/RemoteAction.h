@@ -49,6 +49,9 @@
 #define ACTION_GETDICTIONARY              20
 #define ACTION_GETINDIVIDUALPRICE         21
 #define ACTION_GETLIMITS                  22
+#define ACTION_ADD_CONTRACTOR             23
+#define ACTION_ADD_CONTRACTOR_CONFIRM     24
+#define ACTION_ARTICLE_SALESHISTORY       25
 
 #define DICTTYPE_CONTRACTOR_COUNTRY           1
 #define DICTTYPE_CONTRACTOR_REGION            2
@@ -172,10 +175,12 @@
 - (BOOL) orderByShortcut:(NSString *)shortcut;
 - (BOOL) orderItems:(NSString*)oID maxCount:(int)maxcount;
 - (BOOL) orderDOC:(NSString*)oID maxBytesCount:(int)maxbytescount;
-- (BOOL) outstandingPayments:(NSString*)cID maxCount:(int)maxcount;
 - (BOOL) articleSearch:(NSString*)text maxCount:(int)maxcount;
+- (BOOL) articleSalesHistory:(NSString*)shortcut maxCount:(int)maxcount;
 - (BOOL) newOrder:(NSString*)jsonData;
 - (BOOL) confirmOrderByRefID:(NSString*)refID;
+- (BOOL) addContractor:(NSString*)jsonData;
+- (BOOL) confirmContractorByRefID:(NSString*)refID;
 - (BOOL) async_confirm:(NSString*)requestID;
 - (BOOL) async_fetchresult:(NSString*)requestID;
 - (BOOL) async_deleteresult:(NSString*)requestID;

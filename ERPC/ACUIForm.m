@@ -286,12 +286,12 @@
     return _data;
 }
 
--(void)setNumberOfLines:(int)numberOfLines {
+-(void)setNumberOfLines:(long)numberOfLines {
     _data.numberOfLines = numberOfLines;
     self.data = self.data;
 }
 
--(int)numberOfLines {
+-(long)numberOfLines {
     return _data.numberOfLines;
 }
 
@@ -367,6 +367,8 @@
        [_detailButton addTarget:target action:action forControlEvents:UIControlEventTouchDown]; 
     }
     
+    [self setData:_data.text];
+    
 }
 
 - (void)addErrorButtonWithTarget:(id)target touchAction:(SEL)action {
@@ -381,6 +383,8 @@
     if ( _detailButton ) {
         [_detailButton removeFromSuperview];
         _detailButton = nil;
+        
+        [self setData:_data.text];
     }
 }
 
@@ -669,6 +673,9 @@
 
 -(void)setData:(NSString*)data Level:(int)level {
 
+    if ( data == nil )
+        return;
+    
     level = [self getLevel:level];
     [arr replaceObjectAtIndex:level withObject:data];
     

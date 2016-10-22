@@ -18,9 +18,11 @@
  */
 
 #import "ACArticleVC.h"
+#import "ACUIArticleButton1.h"
 #import "Article.h"
 #import "BackgroundOperations.h"
 #import "ERPCCommon.h"
+#import "RemoteAction.h"
 
 @implementation ACArticleVC {
     
@@ -35,6 +37,7 @@
     ACUIDataItem *di_sprice;
     ACUIDataItem *di_desc;
     ACUITableView *itv;
+    ACUIArticleButton1 *btn;
     NSFetchedResultsController *_frc;
 }
 
@@ -46,7 +49,7 @@
     
         _frc = nil;
         self.refreshPanelVisible = YES;
-        self.form.Title = @"Arykuł";
+        self.form.Title = @"Artykuł";
         di_shortcut = [self.form CreateDataItem:@"symbol"];
         di_name = [self.form CreateDataItem:@"nazwa"];
         di_group = [self.form CreateDataItem:@"grupa"];
@@ -68,6 +71,13 @@
         itv = [self.form CreateTableViewWithMargin:20 headerNibName:@"ACUIArticleTableHeader1" cellNibName:@"ACArticleWHTableViewCell"];
         itv.dataSource = self;
         itv.rowHeight = 18;
+        
+
+        btn = [[ACUIArticleButton1 alloc] initWithNamedNib:@"ACUIArticleButton1" form:self.form];
+        btn.topMargin = 20;
+        [btn.btnHistory addTarget:self action:@selector(salesHistoryTouch:) forControlEvents:UIControlEventTouchDown];
+        [self.form AddUIPart:btn];
+
     }
     return self;
 }
@@ -142,6 +152,13 @@
 
 -(NSDate*)getDate {
     return self.article.uptodate;
+}
+
+- (IBAction)salesHistoryTouch:(id)sender {
+    
+    [Common showArticleSalesHistory:self.article];
+
+    
 }
 
 @end

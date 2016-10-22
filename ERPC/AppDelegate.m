@@ -83,7 +83,6 @@
     [Common CheckTimeout];
     
     if ( [Common loginVC_Active] ) {
-        [Common.OpQueue cancelAllOperations];
         [ACRemoteOperation registerDevice];
     }
 }
